@@ -462,20 +462,42 @@ export default function RFQ() {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="incoterm">贸易条款 Incoterm</Label>
-                  <Select value={rfqData.incoterm} onValueChange={(val) => updateRfqData({ incoterm: val })}>
-                    <SelectTrigger id="incoterm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EXW">EXW</SelectItem>
-                      <SelectItem value="FOB">FOB</SelectItem>
-                      <SelectItem value="CIF">CIF</SelectItem>
-                      <SelectItem value="DDP">DDP</SelectItem>
-                      <SelectItem value="DDU">DDU</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="incoterm">贸易条款 Incoterm</Label>
+                    <Select value={rfqData.incoterm} onValueChange={(val) => updateRfqData({ incoterm: val })}>
+                      <SelectTrigger id="incoterm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EXW">EXW</SelectItem>
+                        <SelectItem value="FOB">FOB</SelectItem>
+                        <SelectItem value="CIF">CIF</SelectItem>
+                        <SelectItem value="DDP">DDP</SelectItem>
+                        <SelectItem value="DDU">DDU</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="target_weight">目标重量 (kg)</Label>
+                    <Input
+                      id="target_weight"
+                      type="number"
+                      value={rfqData.target_weight_kg || ''}
+                      onChange={(e) => updateRfqData({ target_weight_kg: e.target.value ? Number(e.target.value) : undefined })}
+                      placeholder="重量"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="target_price">目标价格</Label>
+                    <Input
+                      id="target_price"
+                      type="number"
+                      value={rfqData.target_price || ''}
+                      onChange={(e) => updateRfqData({ target_price: e.target.value ? Number(e.target.value) : undefined })}
+                      placeholder="价格"
+                    />
+                  </div>
                 </div>
 
                 {/* Category */}

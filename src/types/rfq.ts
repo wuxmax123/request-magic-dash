@@ -85,6 +85,8 @@ export interface RFQData {
   target_city: string;
   incoterm: string;
   currency: string;
+  target_weight_kg?: number;
+  target_price?: number;
   category_l1: number | null;
   category_l2: number | null;
   category_l3: number | null;
