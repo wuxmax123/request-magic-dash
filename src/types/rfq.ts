@@ -87,8 +87,6 @@ export interface RFQData {
   source_links: string[];
   customer_links: string[];
   target_country: string;
-  target_city: string;
-  incoterm: string;
   currency: string;
   target_weight_kg?: number;
   target_price?: number;

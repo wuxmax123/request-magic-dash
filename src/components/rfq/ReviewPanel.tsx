@@ -27,7 +27,7 @@ export function ReviewPanel({
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <span className="text-sm font-medium">RFQ标题：</span>
+            <span className="text-sm font-medium">客户需求（备注）：</span>
             <span className="text-sm ml-2">{rfqData.title || '未填写'}</span>
           </div>
           
@@ -47,14 +47,10 @@ export function ReviewPanel({
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-sm font-medium">目的国：</span>
               <div className="text-sm">{rfqData.target_country}</div>
-            </div>
-            <div>
-              <span className="text-sm font-medium">贸易条款：</span>
-              <div className="text-sm">{rfqData.incoterm}</div>
             </div>
             <div>
               <span className="text-sm font-medium">货币：</span>

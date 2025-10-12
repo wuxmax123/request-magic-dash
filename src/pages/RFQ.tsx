@@ -41,8 +41,6 @@ export default function RFQ() {
     source_links: [],
     customer_links: [],
     target_country: 'US',
-    target_city: '',
-    incoterm: 'EXW',
     currency: 'USD',
     category_l1: null,
     category_l2: null,
@@ -393,58 +391,28 @@ export default function RFQ() {
                       </div>
                     )}
                   </div>
-
-                  <div>
-                    <Label>来源链接 Source Links (1688/Amazon/Shopify)</Label>
-                    <div className="flex gap-2 mt-2">
-                      <Input
-                        placeholder="粘贴来源链接..."
-                        value={sourceLink}
-                        onChange={(e) => setSourceLink(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && addSourceLink()}
-                      />
-                      <Button onClick={addSourceLink}>添加</Button>
-                    </div>
-                    {rfqData.source_links.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {rfqData.source_links.map((link, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm">
-                            <Badge variant="outline" className="flex-1 justify-start truncate">{link}</Badge>
-                            <Button variant="ghost" size="sm" onClick={() => removeLink('source', i)}>删除</Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <Label htmlFor="title">RFQ标题 *</Label>
-                  <Input
+                  <Label htmlFor="title">客户需求（备注）</Label>
+                  <Textarea
                     id="title"
                     value={rfqData.title}
                     onChange={(e) => updateRfqData({ title: e.target.value })}
-                    placeholder="描述性标题..."
+                    placeholder="描述客户需求..."
+                    rows={3}
                   />
                 </div>
 
                 {/* Target Market */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">目的国 *</Label>
                     <Input
                       id="country"
                       value={rfqData.target_country}
                       onChange={(e) => updateRfqData({ target_country: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="city">目的城市</Label>
-                    <Input
-                      id="city"
-                      value={rfqData.target_city}
-                      onChange={(e) => updateRfqData({ target_city: e.target.value })}
                     />
                   </div>
                   <div>
@@ -462,22 +430,7 @@ export default function RFQ() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="incoterm">贸易条款 Incoterm</Label>
-                    <Select value={rfqData.incoterm} onValueChange={(val) => updateRfqData({ incoterm: val })}>
-                      <SelectTrigger id="incoterm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="EXW">EXW</SelectItem>
-                        <SelectItem value="FOB">FOB</SelectItem>
-                        <SelectItem value="CIF">CIF</SelectItem>
-                        <SelectItem value="DDP">DDP</SelectItem>
-                        <SelectItem value="DDU">DDU</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="target_weight">重量 (kg)</Label>
                     <Input
@@ -498,6 +451,29 @@ export default function RFQ() {
                       placeholder="价格"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label>来源链接 Source Links (1688/Amazon/Shopify)</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      placeholder="粘贴来源链接..."
+                      value={sourceLink}
+                      onChange={(e) => setSourceLink(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addSourceLink()}
+                    />
+                    <Button onClick={addSourceLink}>添加</Button>
+                  </div>
+                  {rfqData.source_links.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {rfqData.source_links.map((link, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <Badge variant="outline" className="flex-1 justify-start truncate">{link}</Badge>
+                          <Button variant="ghost" size="sm" onClick={() => removeLink('source', i)}>删除</Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Category */}
