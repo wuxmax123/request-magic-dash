@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      rfqs: {
+        Row: {
+          attachments: string[] | null
+          attributes: Json | null
+          category_l1: number | null
+          category_l2: number | null
+          category_l3: number | null
+          created_at: string | null
+          currency: string
+          customer_links: string[] | null
+          feature_attributes: Json | null
+          feature_modules: string[] | null
+          id: string
+          images: string[] | null
+          inquiry_id: string
+          notes: string | null
+          source_links: string[] | null
+          status: string
+          target_country: string
+          target_price: number | null
+          target_weight_kg: number | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          attributes?: Json | null
+          category_l1?: number | null
+          category_l2?: number | null
+          category_l3?: number | null
+          created_at?: string | null
+          currency: string
+          customer_links?: string[] | null
+          feature_attributes?: Json | null
+          feature_modules?: string[] | null
+          id?: string
+          images?: string[] | null
+          inquiry_id: string
+          notes?: string | null
+          source_links?: string[] | null
+          status: string
+          target_country: string
+          target_price?: number | null
+          target_weight_kg?: number | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          attributes?: Json | null
+          category_l1?: number | null
+          category_l2?: number | null
+          category_l3?: number | null
+          created_at?: string | null
+          currency?: string
+          customer_links?: string[] | null
+          feature_attributes?: Json | null
+          feature_modules?: string[] | null
+          id?: string
+          images?: string[] | null
+          inquiry_id?: string
+          notes?: string | null
+          source_links?: string[] | null
+          status?: string
+          target_country?: string
+          target_price?: number | null
+          target_weight_kg?: number | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          city: string | null
+          contact: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          link_1688: string | null
+          name: string
+          phone: string | null
+          province: string | null
+          quotes: Json | null
+          rating: number | null
+          rating_1688: number | null
+          rfq_id: string | null
+          supplier_id: number
+          tags: string[] | null
+          wechat: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          link_1688?: string | null
+          name: string
+          phone?: string | null
+          province?: string | null
+          quotes?: Json | null
+          rating?: number | null
+          rating_1688?: number | null
+          rfq_id?: string | null
+          supplier_id: number
+          tags?: string[] | null
+          wechat?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          contact?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          link_1688?: string | null
+          name?: string
+          phone?: string | null
+          province?: string | null
+          quotes?: Json | null
+          rating?: number | null
+          rating_1688?: number | null
+          rfq_id?: string | null
+          supplier_id?: number
+          tags?: string[] | null
+          wechat?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
