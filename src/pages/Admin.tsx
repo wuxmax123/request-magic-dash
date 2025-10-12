@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import CategoryManager from '@/components/admin/CategoryManager';
 import CategoryAttributeManager from '@/components/admin/CategoryAttributeManager';
 import FeatureModuleManager from '@/components/admin/FeatureModuleManager';
-import { Settings, FolderTree, ListChecks, Package } from 'lucide-react';
+import { SupplierManager } from '@/components/admin/SupplierManager';
+import { Settings, FolderTree, ListChecks, Package, Users } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -21,7 +22,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <FolderTree className="h-4 w-4" />
               类目管理 Categories
@@ -33,6 +34,10 @@ const Admin = () => {
             <TabsTrigger value="features" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               功能模块 Features
+            </TabsTrigger>
+            <TabsTrigger value="suppliers" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              供应商管理 Suppliers
             </TabsTrigger>
           </TabsList>
 
@@ -76,6 +81,10 @@ const Admin = () => {
                 <FeatureModuleManager />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="suppliers">
+            <SupplierManager />
           </TabsContent>
         </Tabs>
       </div>

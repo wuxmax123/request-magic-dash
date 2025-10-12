@@ -66,10 +66,15 @@ export interface SupplierQuote {
 export interface Supplier {
   supplier_id: number;
   name: string;
+  province: string;
+  city: string;
+  address: string;
   contact: string;
   phone: string;
   wechat: string;
   email: string;
+  link_1688: string;
+  rating_1688: number;
   tags: string[];
   rating: number;
   quotes: SupplierQuote[];
