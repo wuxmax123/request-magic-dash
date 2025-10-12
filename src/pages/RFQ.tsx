@@ -479,7 +479,7 @@ export default function RFQ() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="target_weight">目标重量 (kg)</Label>
+                    <Label htmlFor="target_weight">重量 (kg)</Label>
                     <Input
                       id="target_weight"
                       type="number"
@@ -489,7 +489,7 @@ export default function RFQ() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="target_price">目标价格</Label>
+                    <Label htmlFor="target_price">价格</Label>
                     <Input
                       id="target_price"
                       type="number"
