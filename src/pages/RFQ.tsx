@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RFQData, Category, CategoryAttribute, FeatureModule, FeatureModuleAttribute, Supplier, ValidationError } from '@/types/rfq';
 import { rfqService } from '@/services/rfqService';
 import { Button } from '@/components/ui/button';
@@ -24,9 +24,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function RFQ() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rfqId = searchParams.get('id');
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(false);
 
   // Data states
   const [categories, setCategories] = useState<Category[]>([]);
@@ -64,7 +67,7 @@ export default function RFQ() {
   const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
-  // Load initial data
+  // Load initial data and existing RFQ if id is provided
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -77,6 +80,26 @@ export default function RFQ() {
         setCategories(cats);
         setFeatureModules(modules);
         setAvailableSuppliers(suppliers);
+
+        // Load existing RFQ if id is provided
+        if (rfqId) {
+          const existingRfq = await rfqService.getRFQById(rfqId);
+          if (existingRfq) {
+            setRfqData(existingRfq);
+            setIsViewMode(true);
+            toast({
+              title: '加载成功',
+              description: `已加载询价单 ${rfqId}`,
+            });
+          } else {
+            toast({
+              title: '加载失败',
+              description: '未找到该询价单',
+              variant: 'destructive',
+            });
+            navigate('/rfq-list');
+          }
+        }
       } catch (error) {
         toast({
           title: '数据加载失败',
@@ -88,7 +111,7 @@ export default function RFQ() {
       }
     };
     loadData();
-  }, []);
+  }, [rfqId]);
 
   // Load category attributes when L3 selected
   useEffect(() => {
@@ -308,25 +331,37 @@ export default function RFQ() {
       <header className="border-b bg-card sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/rfq-list')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">新建询价单 New RFQ</h1>
+              <h1 className="text-2xl font-bold">
+                {isViewMode ? `查看询价单 View RFQ` : '新建询价单 New RFQ'}
+              </h1>
               <p className="text-sm text-muted-foreground">
+                {rfqData.inquiry_id && `${rfqData.inquiry_id} · `}
                 {rfqData.title || '未命名RFQ'} · <Badge variant="outline">{rfqData.status}</Badge>
               </p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleSaveDraft} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              保存草稿
-            </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
-              <Send className="h-4 w-4 mr-2" />
-              提交
-            </Button>
+            {!isViewMode && (
+              <>
+                <Button variant="outline" onClick={handleSaveDraft} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  保存草稿
+                </Button>
+                <Button onClick={handleSubmit} disabled={saving}>
+                  <Send className="h-4 w-4 mr-2" />
+                  提交
+                </Button>
+              </>
+            )}
+            {isViewMode && (
+              <Button onClick={() => setIsViewMode(false)}>
+                编辑
+              </Button>
+            )}
           </div>
         </div>
       </header>
