@@ -47,11 +47,11 @@ export default function Index() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/rfq-list')}>
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-muted">
-                      <FileText className="h-8 w-8" />
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <FileText className="h-8 w-8 text-primary" />
                     </div>
                     <div>
                       <CardTitle className="text-xl">我的询价单</CardTitle>
@@ -63,8 +63,8 @@ export default function Index() {
                   <p className="text-sm text-muted-foreground">
                     查看所有草稿、待审核和已完成的询价单
                   </p>
-                  <Button variant="outline" className="mt-4 w-full" disabled>
-                    查看列表 (开发中)
+                  <Button className="mt-4 w-full">
+                    查看列表 View List
                   </Button>
                 </CardContent>
               </Card>
