@@ -15,7 +15,7 @@ export default function Index() {
               <h1 className="text-3xl font-bold">RFQ询价系统</h1>
               <p className="text-muted-foreground mt-1">Request for Quotation Management System</p>
             </div>
-            <Button variant="outline" disabled>
+            <Button variant="outline" onClick={() => navigate('/admin')}>
               <Settings className="h-4 w-4 mr-2" />
               管理后台
             </Button>
