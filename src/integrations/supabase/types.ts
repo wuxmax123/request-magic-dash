@@ -30,6 +30,7 @@ export type Database = {
           images: string[] | null
           inquiry_id: string
           notes: string | null
+          product_name: string | null
           reference_number: string | null
           source_links: string[] | null
           status: string
@@ -55,6 +56,7 @@ export type Database = {
           images?: string[] | null
           inquiry_id: string
           notes?: string | null
+          product_name?: string | null
           reference_number?: string | null
           source_links?: string[] | null
           status: string
@@ -80,6 +82,7 @@ export type Database = {
           images?: string[] | null
           inquiry_id?: string
           notes?: string | null
+          product_name?: string | null
           reference_number?: string | null
           source_links?: string[] | null
           status?: string
