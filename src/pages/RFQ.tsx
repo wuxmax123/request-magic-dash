@@ -40,6 +40,7 @@ export default function RFQ() {
 
   // RFQ form data
   const [rfqData, setRfqData] = useState<RFQData>({
+    reference_number: '',
     title: '',
     source_links: [],
     customer_links: [],
@@ -426,6 +427,17 @@ export default function RFQ() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Reference Number */}
+                <div>
+                  <Label htmlFor="reference_number">参考号 Reference Number</Label>
+                  <Input
+                    id="reference_number"
+                    value={rfqData.reference_number || ''}
+                    onChange={(e) => updateRfqData({ reference_number: e.target.value })}
+                    placeholder="输入参考号..."
+                  />
                 </div>
 
                 {/* Title */}

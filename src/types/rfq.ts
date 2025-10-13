@@ -83,6 +83,7 @@ export interface Supplier {
 // RFQ Types
 export interface RFQData {
   inquiry_id?: string;
+  reference_number?: string;
   title: string;
   source_links: string[];
   customer_links: string[];
