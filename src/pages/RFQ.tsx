@@ -414,10 +414,10 @@ export default function RFQ() {
                 {/* Links */}
                 <div className="space-y-4">
                   <div>
-                    <Label>客户链接 Customer Links</Label>
+                    <Label>产品链接 Product Links</Label>
                     <div className="flex gap-2 mt-2">
                       <Input
-                        placeholder="粘贴客户链接..."
+                        placeholder="粘贴产品链接..."
                         value={customerLink}
                         onChange={(e) => setCustomerLink(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && addCustomerLink()}
