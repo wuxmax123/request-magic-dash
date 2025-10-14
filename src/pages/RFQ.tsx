@@ -26,10 +26,12 @@ export default function RFQ() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rfqId = searchParams.get('id');
+  const viewMode = searchParams.get('mode') === 'view';
+  const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [isViewMode, setIsViewMode] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(viewMode);
 
   // Data states
   const [categories, setCategories] = useState<Category[]>([]);
@@ -88,7 +90,12 @@ export default function RFQ() {
           const existingRfq = await rfqService.getRFQById(rfqId);
           if (existingRfq) {
             setRfqData(existingRfq);
-            setIsViewMode(true);
+            // 根据URL参数设置查看模式
+            setIsViewMode(viewMode);
+            // 如果有tab参数，跳转到对应的tab
+            if (tabParam) {
+              setActiveTab(tabParam);
+            }
             toast({
               title: '加载成功',
               description: `已加载询价单 ${rfqId}`,

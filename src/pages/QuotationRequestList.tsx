@@ -117,9 +117,15 @@ export default function QuotationRequestList() {
     return new Date(dateStr).toLocaleDateString('zh-CN');
   };
 
-  const handleViewRequest = (inquiryId?: string) => {
+  const handleViewRequest = (inquiryId?: string, status?: string) => {
     if (inquiryId) {
-      navigate(`/rfq?id=${inquiryId}`);
+      // 草稿状态：编辑模式
+      if (status === 'draft') {
+        navigate(`/rfq?id=${inquiryId}`);
+      } else {
+        // 其他状态：查看模式（只读）
+        navigate(`/rfq?id=${inquiryId}&mode=view`);
+      }
     }
   };
 
@@ -300,13 +306,27 @@ export default function QuotationRequestList() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="link" 
-                            size="sm"
-                            onClick={() => handleViewRequest(request.inquiry_id)}
-                          >
-                            查看详情
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="link" 
+                              size="sm"
+                              onClick={() => handleViewRequest(request.inquiry_id, request.status)}
+                            >
+                              {request.status === 'draft' ? '编辑' : '查看详情'}
+                            </Button>
+                            {request.status === 'approved' && (
+                              <Button
+                                variant="link"
+                                size="sm"
+                                className="text-blue-500"
+                                onClick={() => {
+                                  navigate(`/rfq?id=${request.inquiry_id}&tab=suppliers`);
+                                }}
+                              >
+                                查看报价
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
