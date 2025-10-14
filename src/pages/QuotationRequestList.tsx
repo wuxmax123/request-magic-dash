@@ -36,6 +36,10 @@ export default function QuotationRequestList() {
   const [selectedInquiryId, setSelectedInquiryId] = useState<string>('');
   const [requestDetailOpen, setRequestDetailOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<QuotationRequest | null>(null);
+  
+  // Selection states
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadRequests();
@@ -135,6 +139,48 @@ export default function QuotationRequestList() {
     setRequestDetailOpen(true);
   };
 
+  const toggleSelection = (inquiryId: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(inquiryId)) {
+      newSelected.delete(inquiryId);
+    } else {
+      newSelected.add(inquiryId);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredRequests.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredRequests.map(r => r.inquiry_id!)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) {
+      toast.error('请先选择要删除的项目');
+      return;
+    }
+
+    if (!confirm(`确定要删除选中的 ${selectedIds.size} 个报价请求吗？此操作不可恢复。`)) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      await rfqService.deleteRFQs(Array.from(selectedIds));
+      toast.success(`成功删除 ${selectedIds.size} 个报价请求`);
+      setSelectedIds(new Set());
+      await loadRequests();
+    } catch (error) {
+      console.error('Failed to delete requests:', error);
+      toast.error('删除失败，请重试');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -172,7 +218,17 @@ export default function QuotationRequestList() {
       {/* Filters */}
       <div className="container mx-auto px-4 py-6">
         <Card className="p-4">
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            {selectedIds.size > 0 && (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleDeleteSelected}
+                disabled={deleting}
+              >
+                {deleting ? '删除中...' : `删除选中 (${selectedIds.size})`}
+              </Button>
+            )}
             <Select value={sourceFilter} onValueChange={(value) => setSourceFilter(value as RequestSource)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="请选择来源" />
@@ -218,7 +274,12 @@ export default function QuotationRequestList() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[40px]">
-                    <input type="checkbox" className="rounded" />
+                    <input 
+                      type="checkbox" 
+                      className="rounded cursor-pointer"
+                      checked={filteredRequests.length > 0 && selectedIds.size === filteredRequests.length}
+                      onChange={toggleSelectAll}
+                    />
                   </TableHead>
                   <TableHead className="min-w-[200px]">产品 Product</TableHead>
                   <TableHead className="min-w-[180px]">产品链接 Product Link</TableHead>
@@ -253,7 +314,12 @@ export default function QuotationRequestList() {
                     return (
                       <TableRow key={request.inquiry_id} className="hover:bg-muted/50">
                         <TableCell>
-                          <input type="checkbox" className="rounded" />
+                          <input 
+                            type="checkbox" 
+                            className="rounded cursor-pointer"
+                            checked={selectedIds.has(request.inquiry_id!)}
+                            onChange={() => toggleSelection(request.inquiry_id!)}
+                          />
                         </TableCell>
                         <TableCell>
                           <div>

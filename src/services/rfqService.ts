@@ -398,4 +398,18 @@ export const rfqService = {
   async deleteCategoryAttribute(categoryId: number, attrCode: string): Promise<{ ok: boolean }> {
     return { ok: true };
   },
+
+  // Delete RFQs
+  async deleteRFQs(inquiryIds: string[]): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .delete()
+      .in('inquiry_id', inquiryIds);
+
+    if (error) throw error;
+
+    return { ok: true };
+  },
 };
