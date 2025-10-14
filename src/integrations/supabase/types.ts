@@ -14,6 +14,220 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          id: number
+          level: number
+          name_cn: string
+          name_en: string
+          parent_id: number | null
+          path: string | null
+          sort: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          id: number
+          level: number
+          name_cn: string
+          name_en: string
+          parent_id?: number | null
+          path?: string | null
+          sort?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          id?: number
+          level?: number
+          name_cn?: string
+          name_en?: string
+          parent_id?: number | null
+          path?: string | null
+          sort?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      category_attributes: {
+        Row: {
+          attr_code: string
+          attr_name: string
+          attr_sort: number | null
+          category_id: number
+          created_at: string | null
+          help_text: string | null
+          id: string
+          input_type: string
+          options_json: Json | null
+          required: number | null
+          unit: string | null
+          updated_at: string | null
+          visible_on_quote: number | null
+        }
+        Insert: {
+          attr_code: string
+          attr_name: string
+          attr_sort?: number | null
+          category_id: number
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          input_type: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Update: {
+          attr_code?: string
+          attr_name?: string
+          attr_sort?: number | null
+          category_id?: number
+          created_at?: string | null
+          help_text?: string | null
+          id?: string
+          input_type?: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_attributes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_feature_binding: {
+        Row: {
+          category_id: number
+          created_at: string | null
+          feature_code: string
+          id: string
+        }
+        Insert: {
+          category_id: number
+          created_at?: string | null
+          feature_code: string
+          id?: string
+        }
+        Update: {
+          category_id?: number
+          created_at?: string | null
+          feature_code?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_feature_binding_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_feature_binding_feature_code_fkey"
+            columns: ["feature_code"]
+            isOneToOne: false
+            referencedRelation: "feature_modules"
+            referencedColumns: ["feature_code"]
+          },
+        ]
+      }
+      feature_attributes: {
+        Row: {
+          attr_code: string
+          attr_name: string
+          attr_sort: number | null
+          created_at: string | null
+          feature_code: string
+          help_text: string | null
+          id: string
+          input_type: string
+          options_json: Json | null
+          required: number | null
+          unit: string | null
+          updated_at: string | null
+          visible_on_quote: number | null
+        }
+        Insert: {
+          attr_code: string
+          attr_name: string
+          attr_sort?: number | null
+          created_at?: string | null
+          feature_code: string
+          help_text?: string | null
+          id?: string
+          input_type: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Update: {
+          attr_code?: string
+          attr_name?: string
+          attr_sort?: number | null
+          created_at?: string | null
+          feature_code?: string
+          help_text?: string | null
+          id?: string
+          input_type?: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_attributes_feature_code_fkey"
+            columns: ["feature_code"]
+            isOneToOne: false
+            referencedRelation: "feature_modules"
+            referencedColumns: ["feature_code"]
+          },
+        ]
+      }
+      feature_modules: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          feature_code: string
+          feature_name: string
+          feature_name_en: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          feature_code: string
+          feature_name: string
+          feature_name_en?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          feature_code?: string
+          feature_name?: string
+          feature_name_en?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       rfqs: {
         Row: {
           attachments: string[] | null
