@@ -287,7 +287,7 @@ export default function QuotationRequestList() {
                   <TableHead className="w-[100px]">图片 Image</TableHead>
                   <TableHead className="min-w-[100px]">优先级 Priority</TableHead>
                   <TableHead className="min-w-[120px]">日期 Date</TableHead>
-                  <TableHead className="min-w-[200px]">产品名字 Product Name</TableHead>
+                  <TableHead className="min-w-[150px]">备注 Note</TableHead>
                   <TableHead className="min-w-[120px]">目标 Target</TableHead>
                   <TableHead className="min-w-[100px]">操作 Menu</TableHead>
                 </TableRow>
@@ -322,7 +322,18 @@ export default function QuotationRequestList() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{request.title || '-'}</div>
+                            {request.customer_links && request.customer_links.length > 0 && request.product_name ? (
+                              <a 
+                                href={request.customer_links[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-blue-600 hover:underline block"
+                              >
+                                {request.product_name}
+                              </a>
+                            ) : (
+                              <div className="font-medium">{request.product_name || request.title || '-'}</div>
+                            )}
                             <button 
                               onClick={() => handleViewRFQDetail(request.inquiry_id!)}
                               className="text-sm text-blue-600 hover:underline"
@@ -368,18 +379,9 @@ export default function QuotationRequestList() {
                           <span className="text-sm">{formatDate(request.created_at)}</span>
                         </TableCell>
                         <TableCell>
-                          {request.customer_links && request.customer_links.length > 0 && request.product_name ? (
-                            <a 
-                              href={request.customer_links[0]}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              {request.product_name}
-                            </a>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">{request.product_name || '-'}</span>
-                          )}
+                          <span className="text-sm text-muted-foreground line-clamp-2">
+                            {request.notes || '-'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
