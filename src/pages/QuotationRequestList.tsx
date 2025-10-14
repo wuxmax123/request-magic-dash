@@ -10,6 +10,8 @@ import { Home, Plus, Search, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { rfqService } from '@/services/rfqService';
 import type { RFQData } from '@/types/rfq';
+import { RFQDetailDialog } from '@/components/rfq/RFQDetailDialog';
+import { QuotationRequestDetailDialog } from '@/components/rfq/QuotationRequestDetailDialog';
 
 type RequestSource = 'system_rfq' | 'customer_quote' | 'all';
 type PriorityLevel = 'high' | 'medium' | 'low';
@@ -28,6 +30,12 @@ export default function QuotationRequestList() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<RequestSource>('all');
+  
+  // Dialog states
+  const [rfqDialogOpen, setRfqDialogOpen] = useState(false);
+  const [selectedInquiryId, setSelectedInquiryId] = useState<string>('');
+  const [requestDetailOpen, setRequestDetailOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<QuotationRequest | null>(null);
 
   useEffect(() => {
     loadRequests();
@@ -117,16 +125,14 @@ export default function QuotationRequestList() {
     return new Date(dateStr).toLocaleDateString('zh-CN');
   };
 
-  const handleViewRequest = (inquiryId?: string, status?: string) => {
-    if (inquiryId) {
-      // 草稿状态：编辑模式
-      if (status === 'draft') {
-        navigate(`/rfq?id=${inquiryId}`);
-      } else {
-        // 其他状态：查看模式（只读）
-        navigate(`/rfq?id=${inquiryId}&mode=view`);
-      }
-    }
+  const handleViewRFQDetail = (inquiryId: string) => {
+    setSelectedInquiryId(inquiryId);
+    setRfqDialogOpen(true);
+  };
+
+  const handleViewRequestDetail = (request: QuotationRequest) => {
+    setSelectedRequest(request);
+    setRequestDetailOpen(true);
   };
 
   if (loading) {
@@ -251,9 +257,12 @@ export default function QuotationRequestList() {
                         <TableCell>
                           <div>
                             <div className="font-medium">{request.title || request.product_name || '-'}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {request.reference_number || request.inquiry_id}
-                            </div>
+                            <button 
+                              onClick={() => handleViewRFQDetail(request.inquiry_id!)}
+                              className="text-sm text-blue-600 hover:underline"
+                            >
+                              {request.inquiry_id}
+                            </button>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -307,13 +316,23 @@ export default function QuotationRequestList() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button 
-                              variant="link" 
-                              size="sm"
-                              onClick={() => handleViewRequest(request.inquiry_id, request.status)}
-                            >
-                              {request.status === 'draft' ? '编辑' : '查看详情'}
-                            </Button>
+                            {request.status === 'draft' ? (
+                              <Button 
+                                variant="link" 
+                                size="sm"
+                                onClick={() => navigate(`/rfq?id=${request.inquiry_id}`)}
+                              >
+                                编辑
+                              </Button>
+                            ) : (
+                              <Button 
+                                variant="link" 
+                                size="sm"
+                                onClick={() => handleViewRequestDetail(request)}
+                              >
+                                查看详情
+                              </Button>
+                            )}
                             {request.status === 'approved' && (
                               <Button
                                 variant="link"
@@ -337,6 +356,21 @@ export default function QuotationRequestList() {
           </div>
         </Card>
       </div>
+
+      {/* Dialogs */}
+      <RFQDetailDialog 
+        inquiryId={selectedInquiryId}
+        open={rfqDialogOpen}
+        onOpenChange={setRfqDialogOpen}
+      />
+      
+      {selectedRequest && (
+        <QuotationRequestDetailDialog
+          request={selectedRequest}
+          open={requestDetailOpen}
+          onOpenChange={setRequestDetailOpen}
+        />
+      )}
     </div>
   );
 }
