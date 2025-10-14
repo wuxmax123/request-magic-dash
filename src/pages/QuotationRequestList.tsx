@@ -281,7 +281,7 @@ export default function QuotationRequestList() {
                       onChange={toggleSelectAll}
                     />
                   </TableHead>
-                  <TableHead className="min-w-[200px]">产品 Product</TableHead>
+                  <TableHead className="min-w-[200px]">产品名称 Product Name</TableHead>
                   <TableHead className="min-w-[120px]">请求来源 Request From</TableHead>
                   <TableHead className="min-w-[120px]">状态 Status</TableHead>
                   <TableHead className="w-[100px]">图片 Image</TableHead>

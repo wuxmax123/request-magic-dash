@@ -26,6 +26,24 @@ export function ReviewPanel({
           <CardTitle>基本信息</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {rfqData.product_name && (
+            <div>
+              <span className="text-sm font-medium">产品名称：</span>
+              {rfqData.customer_links && rfqData.customer_links.length > 0 ? (
+                <a 
+                  href={rfqData.customer_links[0]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm ml-2 text-blue-600 hover:underline"
+                >
+                  {rfqData.product_name}
+                </a>
+              ) : (
+                <span className="text-sm ml-2">{rfqData.product_name}</span>
+              )}
+            </div>
+          )}
+
           <div>
             <span className="text-sm font-medium">客户需求（备注）：</span>
             <span className="text-sm ml-2">{rfqData.title || '未填写'}</span>
