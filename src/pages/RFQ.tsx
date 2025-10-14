@@ -421,15 +421,18 @@ export default function RFQ() {
                         value={customerLink}
                         onChange={(e) => setCustomerLink(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && addCustomerLink()}
+                        disabled={isViewMode}
                       />
-                      <Button onClick={addCustomerLink}>添加</Button>
+                      <Button onClick={addCustomerLink} disabled={isViewMode}>添加</Button>
                     </div>
                     {rfqData.customer_links.length > 0 && (
                       <div className="mt-2 space-y-1">
                         {rfqData.customer_links.map((link, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm">
                             <Badge variant="outline" className="flex-1 justify-start truncate">{link}</Badge>
-                            <Button variant="ghost" size="sm" onClick={() => removeLink('customer', i)}>删除</Button>
+                            {!isViewMode && (
+                              <Button variant="ghost" size="sm" onClick={() => removeLink('customer', i)}>删除</Button>
+                            )}
                           </div>
                         ))}
                       </div>
