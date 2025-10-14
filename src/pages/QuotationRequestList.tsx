@@ -221,6 +221,7 @@ export default function QuotationRequestList() {
                     <input type="checkbox" className="rounded" />
                   </TableHead>
                   <TableHead className="min-w-[200px]">产品 Product</TableHead>
+                  <TableHead className="min-w-[180px]">产品链接 Product Link</TableHead>
                   <TableHead className="min-w-[120px]">请求来源 Request From</TableHead>
                   <TableHead className="min-w-[120px]">状态 Status</TableHead>
                   <TableHead className="w-[100px]">图片 Image</TableHead>
@@ -234,7 +235,7 @@ export default function QuotationRequestList() {
               <TableBody>
                 {filteredRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12">
+                    <TableCell colSpan={11} className="text-center py-12">
                       <div className="text-muted-foreground">
                         <p className="mb-4">暂无报价请求</p>
                         <Button onClick={() => navigate('/rfq')}>
@@ -256,13 +257,41 @@ export default function QuotationRequestList() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{request.title || request.product_name || '-'}</div>
+                            {request.customer_links && request.customer_links.length > 0 ? (
+                              <a 
+                                href={request.customer_links[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-blue-600 hover:underline block"
+                              >
+                                {request.title || request.product_name || '-'}
+                              </a>
+                            ) : (
+                              <div className="font-medium">{request.title || request.product_name || '-'}</div>
+                            )}
                             <button 
                               onClick={() => handleViewRFQDetail(request.inquiry_id!)}
                               className="text-sm text-blue-600 hover:underline"
                             >
                               {request.inquiry_id}
                             </button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-[180px]">
+                            {request.customer_links && request.customer_links.length > 0 ? (
+                              <a 
+                                href={request.customer_links[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline block truncate"
+                                title={request.customer_links[0]}
+                              >
+                                {request.customer_links[0]}
+                              </a>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">-</span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>

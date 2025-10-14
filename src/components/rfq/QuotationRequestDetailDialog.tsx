@@ -176,6 +176,31 @@ export function QuotationRequestDetailDialog({
             </Card>
           )}
 
+          {/* 产品链接 */}
+          {request.customer_links && request.customer_links.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">产品链接</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1">
+                  {request.customer_links.map((link, i) => (
+                    <li key={i}>
+                      <a 
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline break-all"
+                      >
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
           {/* 来源链接 */}
           {request.source_links && request.source_links.length > 0 && (
             <Card>

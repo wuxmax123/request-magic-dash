@@ -36,12 +36,41 @@ export function ReviewPanel({
             <span className="text-sm ml-2">{categoryPath}</span>
           </div>
 
-          {rfqData.source_links.length > 0 && (
+          {rfqData.customer_links && rfqData.customer_links.length > 0 && (
+            <div>
+              <span className="text-sm font-medium">产品链接：</span>
+              <ul className="mt-1 space-y-1">
+                {rfqData.customer_links.map((link, i) => (
+                  <li key={i}>
+                    <a 
+                      href={link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {rfqData.source_links && rfqData.source_links.length > 0 && (
             <div>
               <span className="text-sm font-medium">来源链接：</span>
               <ul className="mt-1 space-y-1">
                 {rfqData.source_links.map((link, i) => (
-                  <li key={i} className="text-sm text-blue-600 truncate">{link}</li>
+                  <li key={i}>
+                    <a 
+                      href={link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-600 hover:underline break-all"
+                    >
+                      {link}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -98,27 +127,42 @@ export function ReviewPanel({
         </Card>
       )}
 
-      {/* Feature Module Attributes */}
-      {rfqData.feature_modules.map(moduleCode => {
-        const attrs = featureAttributes[moduleCode]?.filter(a => a.visible_on_quote === 1) || [];
-        const moduleData = rfqData.feature_attributes[moduleCode] || {};
+      {/* Feature Module Attributes - Combined */}
+      {rfqData.feature_modules.length > 0 && (() => {
+        const allFeatureAttrs: Array<{ moduleCode: string; attr: FeatureModuleAttribute; value: any }> = [];
+        
+        rfqData.feature_modules.forEach(moduleCode => {
+          const attrs = featureAttributes[moduleCode]?.filter(a => a.visible_on_quote === 1) || [];
+          const moduleData = rfqData.feature_attributes[moduleCode] || {};
+          
+          attrs.forEach(attr => {
+            allFeatureAttrs.push({
+              moduleCode,
+              attr,
+              value: moduleData[attr.attr_code]
+            });
+          });
+        });
 
-        if (attrs.length === 0) return null;
+        if (allFeatureAttrs.length === 0) return null;
 
         return (
-          <Card key={moduleCode}>
+          <Card>
             <CardHeader>
-              <CardTitle className="text-base">{moduleCode} 属性</CardTitle>
+              <CardTitle>功能模块属性</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                {attrs.map(attr => {
-                  const value = moduleData[attr.attr_code];
+                {allFeatureAttrs.map(({ moduleCode, attr, value }) => {
                   const displayValue = Array.isArray(value) ? value.join(', ') : value;
 
                   return (
-                    <div key={attr.attr_code}>
-                      <span className="text-sm font-medium">{attr.attr_name}：</span>
+                    <div key={`${moduleCode}-${attr.attr_code}`}>
+                      <span className="text-sm font-medium">
+                        {attr.attr_name}
+                        <span className="text-xs text-muted-foreground ml-1">({moduleCode})</span>
+                        ：
+                      </span>
                       <span className="text-sm ml-2">
                         {displayValue || '-'}
                         {attr.unit && value && ` ${attr.unit}`}
@@ -130,7 +174,7 @@ export function ReviewPanel({
             </CardContent>
           </Card>
         );
-      })}
+      })()}
 
       {/* Suppliers */}
       {rfqData.suppliers.length > 0 && (
