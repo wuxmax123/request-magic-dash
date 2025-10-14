@@ -85,8 +85,8 @@ export function CategoryCascader({ categories, value, onChange, required }: Cate
             <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[600px] p-0" align="start">
-          <div className="p-3 border-b">
+        <PopoverContent className="w-[700px] p-0 bg-background border shadow-lg z-50" align="start" sideOffset={5}>
+          <div className="p-3 border-b bg-background sticky top-0 z-10">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -97,59 +97,87 @@ export function CategoryCascader({ categories, value, onChange, required }: Cate
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 divide-x max-h-[400px]">
+          <div className="grid grid-cols-3 divide-x max-h-[500px]">
             {/* L1 Categories */}
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto bg-background">
+              <div className="p-2 text-xs font-semibold text-muted-foreground sticky top-0 bg-background border-b">
+                一级类目 L1
+              </div>
               {filterCategories(categories, search).map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => handleL1Select(cat)}
                   className={cn(
-                    "w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center justify-between",
-                    value[0] === cat.id && "bg-muted font-medium"
+                    "w-full px-3 py-2.5 text-left text-sm hover:bg-accent hover:text-accent-foreground flex items-center justify-between transition-colors",
+                    value[0] === cat.id && "bg-accent text-accent-foreground font-medium"
                   )}
                 >
-                  <span>{cat.name_cn}</span>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{cat.name_cn}</span>
+                    <span className="text-xs text-muted-foreground">{cat.name_en}</span>
+                  </div>
                   {cat.children && cat.children.length > 0 && (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
                   )}
                 </button>
               ))}
             </div>
 
             {/* L2 Categories */}
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto bg-background">
+              <div className="p-2 text-xs font-semibold text-muted-foreground sticky top-0 bg-background border-b">
+                二级类目 L2
+              </div>
               {l1Selected?.children?.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => handleL2Select(cat)}
                   className={cn(
-                    "w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center justify-between",
-                    value[1] === cat.id && "bg-muted font-medium"
+                    "w-full px-3 py-2.5 text-left text-sm hover:bg-accent hover:text-accent-foreground flex items-center justify-between transition-colors",
+                    value[1] === cat.id && "bg-accent text-accent-foreground font-medium"
                   )}
                 >
-                  <span>{cat.name_cn}</span>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{cat.name_cn}</span>
+                    <span className="text-xs text-muted-foreground">{cat.name_en}</span>
+                  </div>
                   {cat.children && cat.children.length > 0 && (
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
                   )}
                 </button>
               ))}
+              {!l1Selected && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  请先选择一级类目
+                </div>
+              )}
             </div>
 
             {/* L3 Categories */}
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto bg-background">
+              <div className="p-2 text-xs font-semibold text-muted-foreground sticky top-0 bg-background border-b">
+                三级类目 L3
+              </div>
               {l3Options.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => handleL3Select(cat)}
                   className={cn(
-                    "w-full px-3 py-2 text-left text-sm hover:bg-muted",
-                    value[2] === cat.id && "bg-muted font-medium"
+                    "w-full px-3 py-2.5 text-left text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                    value[2] === cat.id && "bg-accent text-accent-foreground font-medium"
                   )}
                 >
-                  {cat.name_cn}
+                  <div className="flex flex-col">
+                    <span className="font-medium">{cat.name_cn}</span>
+                    <span className="text-xs text-muted-foreground">{cat.name_en}</span>
+                  </div>
                 </button>
               ))}
+              {!l2Selected && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  请先选择二级类目
+                </div>
+              )}
             </div>
           </div>
         </PopoverContent>

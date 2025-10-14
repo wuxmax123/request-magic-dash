@@ -29,13 +29,14 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         {selectedModules.map((module) => (
-          <Badge key={module.feature_code} variant="secondary" className="text-sm pl-3 pr-1 py-1">
-            {module.feature_name}
+          <Badge key={module.feature_code} variant="secondary" className="text-sm pl-3 pr-1 py-1.5 gap-1">
+            <span>{module.feature_name}</span>
             <button
               onClick={() => removeModule(module.feature_code)}
-              className="ml-2 hover:bg-muted-foreground/20 rounded-full p-0.5"
+              className="ml-1 hover:bg-muted-foreground/20 rounded-full p-0.5"
+              aria-label={`移除 ${module.feature_name}`}
             >
               <X className="h-3 w-3" />
             </button>
@@ -44,24 +45,53 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
         
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7">
+            <Button variant="outline" size="sm" className="h-8">
               + 添加功能模块
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-2" align="start">
-            <div className="grid grid-cols-2 gap-2">
-              {availableModules.map((module) => (
-                <button
-                  key={module.feature_code}
-                  onClick={() => toggleModule(module.feature_code)}
-                  className={cn(
-                    "px-3 py-2 text-sm rounded-md border hover:bg-muted text-left transition-colors",
-                    selected.includes(module.feature_code) && "bg-primary text-primary-foreground"
-                  )}
-                >
-                  {module.feature_name}
-                </button>
-              ))}
+          <PopoverContent className="w-[480px] p-0 bg-background border shadow-lg z-50" align="start" sideOffset={5}>
+            <div className="p-3 border-b bg-background">
+              <h4 className="font-semibold text-sm">选择功能模块 Feature Modules</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                点击添加，已选择的模块会显示为标签
+              </p>
+            </div>
+            <div className="p-3 max-h-[400px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-2">
+                {modules.map((module) => {
+                  const isSelected = selected.includes(module.feature_code);
+                  return (
+                    <button
+                      key={module.feature_code}
+                      onClick={() => toggleModule(module.feature_code)}
+                      className={cn(
+                        "px-3 py-2.5 text-sm rounded-lg border-2 text-left transition-all hover:border-primary",
+                        isSelected 
+                          ? "bg-primary text-primary-foreground border-primary font-medium" 
+                          : "bg-background hover:bg-accent border-border"
+                      )}
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium">{module.feature_name}</span>
+                        {module.description && (
+                          <span className={cn(
+                            "text-xs",
+                            isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
+                          )}>
+                            {module.description}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {modules.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>暂无可用的功能模块</p>
+                  <p className="text-xs mt-1">请先在管理页面导入数据</p>
+                </div>
+              )}
             </div>
           </PopoverContent>
         </Popover>
@@ -69,7 +99,7 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
 
       {selected.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          点击"添加功能模块"选择产品功能
+          点击"添加功能模块"选择产品功能（如：加热、蓝牙、防水等）
         </p>
       )}
     </div>
