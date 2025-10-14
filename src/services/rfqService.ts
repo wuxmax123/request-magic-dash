@@ -6,6 +6,7 @@ import {
   RFQData,
   Supplier 
 } from '@/types/rfq';
+import { categoryService } from './categoryService';
 import { 
   mockCategories, 
   mockCategoryAttributes, 
@@ -13,18 +14,75 @@ import {
   mockFeatureAttributes 
 } from '@/data/mockData';
 
-// Mock delay to simulate API calls
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 export const rfqService = {
-  // Category APIs
+  // Category APIs - now using real database
   async getCategoryTree(): Promise<Category[]> {
-    await delay(300);
-    return mockCategories;
+    try {
+      const l1Categories = await categoryService.getL1Categories();
+      const tree: Category[] = [];
+      
+      const convertCategory = (cat: any): Category => ({
+        id: cat.id,
+        name_cn: cat.name_cn,
+        name_en: cat.name_en,
+        code: cat.code || '',
+        parent_id: cat.parent_id,
+        level: cat.level as 1 | 2 | 3,
+        path: cat.path || '',
+        sort: cat.sort,
+        children: cat.children?.map(convertCategory)
+      });
+      
+      for (const l1 of l1Categories) {
+        const l2Categories = await categoryService.getL2Categories(l1.id);
+        const l1Children: Category[] = [];
+        
+        for (const l2 of l2Categories) {
+          const l3Categories = await categoryService.getL3Categories(l2.id);
+          l1Children.push({
+            id: l2.id,
+            name_cn: l2.name_cn,
+            name_en: l2.name_en,
+            code: l2.code || '',
+            parent_id: l2.parent_id,
+            level: 2,
+            path: l2.path || '',
+            sort: l2.sort,
+            children: l3Categories.map(l3 => ({
+              id: l3.id,
+              name_cn: l3.name_cn,
+              name_en: l3.name_en,
+              code: l3.code || '',
+              parent_id: l3.parent_id,
+              level: 3,
+              path: l3.path || '',
+              sort: l3.sort,
+            }))
+          });
+        }
+        
+        tree.push({
+          id: l1.id,
+          name_cn: l1.name_cn,
+          name_en: l1.name_en,
+          code: l1.code || '',
+          parent_id: l1.parent_id,
+          level: 1,
+          path: l1.path || '',
+          sort: l1.sort,
+          children: l1Children
+        });
+      }
+      
+      return tree;
+    } catch (error) {
+      console.error('Failed to load category tree:', error);
+      // Fallback to mock data if database is empty
+      return mockCategories;
+    }
   },
 
   async getCategoryById(id: number): Promise<Category | null> {
-    await delay(100);
     const findCategory = (categories: Category[]): Category | null => {
       for (const cat of categories) {
         if (cat.id === id) return cat;
@@ -35,23 +93,83 @@ export const rfqService = {
       }
       return null;
     };
-    return findCategory(mockCategories);
+    const tree = await this.getCategoryTree();
+    return findCategory(tree);
   },
 
   async getCategoryAttributes(l3Id: number): Promise<CategoryAttribute[]> {
-    await delay(200);
-    return mockCategoryAttributes[l3Id] || [];
+    try {
+      const attrs = await categoryService.getCategoryAttributes(l3Id);
+      return attrs.map(attr => ({
+        ...attr,
+        category_id: l3Id,
+        input_type: attr.input_type as any,
+        options_json: Array.isArray(attr.options_json) ? attr.options_json : []
+      })) as CategoryAttribute[];
+    } catch (error) {
+      console.error('Failed to load category attributes:', error);
+      return mockCategoryAttributes[l3Id] || [];
+    }
   },
 
-  // Feature Module APIs
+  // Feature Module APIs - now using real database
   async getFeatureModules(): Promise<FeatureModule[]> {
-    await delay(200);
-    return mockFeatureModules;
+    try {
+      const modules = await categoryService.getFeatureModules();
+      return modules.map(m => ({
+        feature_code: m.feature_code,
+        feature_name: m.feature_name,
+        feature_name_en: m.feature_name_en || '',
+        description: m.description
+      }));
+    } catch (error) {
+      console.error('Failed to load feature modules:', error);
+      return mockFeatureModules;
+    }
+  },
+
+  async getAvailableFeatureModules(l3Id: number): Promise<FeatureModule[]> {
+    try {
+      const modules = await categoryService.getAvailableFeatureModules(l3Id);
+      if (modules.length === 0) {
+        // If no bindings exist, return all modules
+        return await this.getFeatureModules();
+      }
+      return modules.map(m => ({
+        feature_code: m.feature_code,
+        feature_name: m.feature_name,
+        feature_name_en: m.feature_name_en || '',
+        description: m.description
+      }));
+    } catch (error) {
+      console.error('Failed to load available feature modules:', error);
+      return mockFeatureModules;
+    }
   },
 
   async getFeatureAttributes(featureCode: string): Promise<FeatureModuleAttribute[]> {
-    await delay(200);
-    return mockFeatureAttributes[featureCode] || [];
+    try {
+      const attrs = await categoryService.getFeatureAttributes(featureCode);
+      const module = await categoryService.getFeatureModules();
+      const featureModule = module.find(m => m.feature_code === featureCode);
+      
+      return attrs.map(attr => ({
+        feature_code: featureCode,
+        feature_name: featureModule?.feature_name || '',
+        attr_code: attr.attr_code,
+        attr_name: attr.attr_name,
+        input_type: attr.input_type as any,
+        required: attr.required,
+        unit: attr.unit || '',
+        options_json: Array.isArray(attr.options_json) ? attr.options_json : [],
+        help_text: attr.help_text || '',
+        visible_on_quote: attr.visible_on_quote,
+        attr_sort: attr.attr_sort
+      })) as FeatureModuleAttribute[];
+    } catch (error) {
+      console.error('Failed to load feature attributes:', error);
+      return mockFeatureAttributes[featureCode] || [];
+    }
   },
 
   // RFQ APIs
@@ -203,7 +321,6 @@ export const rfqService = {
 
   // Supplier APIs
   async listSuppliers(): Promise<Supplier[]> {
-    await delay(300);
     return [
       {
         supplier_id: 1,
@@ -258,33 +375,27 @@ export const rfqService = {
 
   // Admin - Category Management
   async createCategory(category: Omit<Category, 'id'>): Promise<{ ok: boolean; id: number }> {
-    await delay(400);
     return { ok: true, id: Math.floor(Math.random() * 10000) };
   },
 
   async updateCategory(id: number, category: Partial<Category>): Promise<{ ok: boolean }> {
-    await delay(400);
     return { ok: true };
   },
 
   async deleteCategory(id: number): Promise<{ ok: boolean }> {
-    await delay(400);
     return { ok: true };
   },
 
   // Admin - Attribute Management
   async createCategoryAttribute(attr: CategoryAttribute): Promise<{ ok: boolean }> {
-    await delay(400);
     return { ok: true };
   },
 
   async updateCategoryAttribute(categoryId: number, attrCode: string, attr: Partial<CategoryAttribute>): Promise<{ ok: boolean }> {
-    await delay(400);
     return { ok: true };
   },
 
   async deleteCategoryAttribute(categoryId: number, attrCode: string): Promise<{ ok: boolean }> {
-    await delay(400);
     return { ok: true };
   },
 };

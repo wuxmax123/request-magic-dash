@@ -5,7 +5,8 @@ import CategoryManager from '@/components/admin/CategoryManager';
 import CategoryAttributeManager from '@/components/admin/CategoryAttributeManager';
 import FeatureModuleManager from '@/components/admin/FeatureModuleManager';
 import { SupplierManager } from '@/components/admin/SupplierManager';
-import { Settings, FolderTree, ListChecks, Package, Users } from 'lucide-react';
+import { DataImporter } from '@/components/admin/DataImporter';
+import { Settings, FolderTree, ListChecks, Package, Users, Database } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -21,8 +22,12 @@ const Admin = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="import" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="import" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              数据导入 Import
+            </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <FolderTree className="h-4 w-4" />
               类目管理 Categories
@@ -40,6 +45,10 @@ const Admin = () => {
               供应商管理 Suppliers
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="import">
+            <DataImporter />
+          </TabsContent>
 
           <TabsContent value="categories">
             <Card>
