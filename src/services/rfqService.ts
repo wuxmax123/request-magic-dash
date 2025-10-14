@@ -186,6 +186,8 @@ export const rfqService = {
       .upsert({
         user_id: user.id,
         inquiry_id,
+        product_name: data.product_name,
+        reference_number: data.reference_number,
         title: data.title,
         source_links: data.source_links,
         customer_links: data.customer_links,
@@ -247,6 +249,8 @@ export const rfqService = {
 
     return {
       inquiry_id: data.inquiry_id,
+      product_name: data.product_name,
+      reference_number: data.reference_number,
       title: data.title,
       source_links: data.source_links || [],
       customer_links: data.customer_links || [],
@@ -296,6 +300,8 @@ export const rfqService = {
 
     return data.map(rfq => ({
       inquiry_id: rfq.inquiry_id,
+      product_name: rfq.product_name,
+      reference_number: rfq.reference_number,
       title: rfq.title,
       source_links: rfq.source_links || [],
       customer_links: rfq.customer_links || [],
