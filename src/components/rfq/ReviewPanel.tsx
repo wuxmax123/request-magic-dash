@@ -29,9 +29,9 @@ export function ReviewPanel({
           {rfqData.product_name && (
             <div>
               <span className="text-sm font-medium">产品名称：</span>
-              {rfqData.customer_links && rfqData.customer_links.length > 0 ? (
+              {(rfqData.customer_links && rfqData.customer_links.length > 0) || (rfqData.source_links && rfqData.source_links.length > 0) ? (
                 <a 
-                  href={rfqData.customer_links[0]}
+                  href={(rfqData.customer_links && rfqData.customer_links.length > 0) ? rfqData.customer_links[0] : (rfqData.source_links && rfqData.source_links.length > 0 ? rfqData.source_links[0] : '#')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm ml-2 text-blue-600 hover:underline"

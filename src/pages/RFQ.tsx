@@ -264,7 +264,24 @@ export default function RFQ() {
   const handleSaveDraft = async () => {
     setSaving(true);
     try {
-      const result = await rfqService.saveRFQ({ ...rfqData, status: 'draft' });
+      const pendingCustomer = customerLink.trim() ? [customerLink.trim()] : [];
+      const pendingSource = sourceLink.trim() ? [sourceLink.trim()] : [];
+      const payload = {
+        ...rfqData,
+        customer_links: [...rfqData.customer_links, ...pendingCustomer],
+        source_links: [...rfqData.source_links, ...pendingSource],
+        status: 'draft' as const,
+      };
+      const result = await rfqService.saveRFQ(payload);
+      // Sync local state so UI reflects saved links
+      if (pendingCustomer.length || pendingSource.length) {
+        updateRfqData({
+          customer_links: payload.customer_links,
+          source_links: payload.source_links,
+        });
+        setCustomerLink('');
+        setSourceLink('');
+      }
       toast({
         title: '草稿保存成功',
         description: `RFQ ID: ${result.id}`,
@@ -291,7 +308,23 @@ export default function RFQ() {
 
     setSaving(true);
     try {
-      const result = await rfqService.saveRFQ({ ...rfqData, status: 'submitted' });
+      const pendingCustomer = customerLink.trim() ? [customerLink.trim()] : [];
+      const pendingSource = sourceLink.trim() ? [sourceLink.trim()] : [];
+      const payload = {
+        ...rfqData,
+        customer_links: [...rfqData.customer_links, ...pendingCustomer],
+        source_links: [...rfqData.source_links, ...pendingSource],
+        status: 'submitted' as const,
+      };
+      const result = await rfqService.saveRFQ(payload);
+      if (pendingCustomer.length || pendingSource.length) {
+        updateRfqData({
+          customer_links: payload.customer_links,
+          source_links: payload.source_links,
+        });
+        setCustomerLink('');
+        setSourceLink('');
+      }
       toast({
         title: '提交成功',
         description: `RFQ ID: ${result.id}`,

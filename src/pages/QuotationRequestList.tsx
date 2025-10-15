@@ -322,14 +322,14 @@ export default function QuotationRequestList() {
                         </TableCell>
                         <TableCell>
                           <div>
-                            {request.customer_links && request.customer_links.length > 0 && request.product_name ? (
+                            {((request.customer_links && request.customer_links.length > 0) || (request.source_links && request.source_links.length > 0)) ? (
                               <a 
-                                href={request.customer_links[0]}
+                                href={(request.customer_links && request.customer_links.length > 0) ? request.customer_links[0] : (request.source_links && request.source_links.length > 0 ? request.source_links[0] : '#')}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="font-medium text-blue-600 hover:underline block"
                               >
-                                {request.product_name}
+                                {request.product_name || request.title || '-'}
                               </a>
                             ) : (
                               <div className="font-medium">{request.product_name || request.title || '-'}</div>
