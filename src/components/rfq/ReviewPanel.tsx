@@ -29,9 +29,9 @@ export function ReviewPanel({
           {rfqData.product_name && (
             <div>
               <span className="text-sm font-medium">产品名称：</span>
-              {(rfqData.customer_links && rfqData.customer_links.length > 0) || (rfqData.source_links && rfqData.source_links.length > 0) ? (
+              {(rfqData.customer_links && rfqData.customer_links.length > 0) ? (
                 <a 
-                  href={(rfqData.customer_links && rfqData.customer_links.length > 0) ? rfqData.customer_links[0] : (rfqData.source_links && rfqData.source_links.length > 0 ? rfqData.source_links[0] : '#')}
+                  href={rfqData.customer_links[0]}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm ml-2 text-blue-600 hover:underline"
@@ -59,26 +59,6 @@ export function ReviewPanel({
               <span className="text-sm font-medium">产品链接：</span>
               <ul className="mt-1 space-y-1">
                 {rfqData.customer_links.map((link, i) => (
-                  <li key={i}>
-                    <a 
-                      href={link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline break-all"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {rfqData.source_links && rfqData.source_links.length > 0 && (
-            <div>
-              <span className="text-sm font-medium">来源链接：</span>
-              <ul className="mt-1 space-y-1">
-                {rfqData.source_links.map((link, i) => (
                   <li key={i}>
                     <a 
                       href={link} 

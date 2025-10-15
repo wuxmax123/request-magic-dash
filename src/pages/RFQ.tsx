@@ -51,7 +51,7 @@ export default function RFQ() {
     title: '',
     source_links: [],
     customer_links: [],
-    target_country: 'US',
+    target_country: '',
     currency: 'USD',
     category_l1: null,
     category_l2: null,
@@ -67,7 +67,6 @@ export default function RFQ() {
     status: 'draft',
   });
 
-  const [sourceLink, setSourceLink] = useState('');
   const [customerLink, setCustomerLink] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [attrErrors, setAttrErrors] = useState<Record<string, string>>({});
@@ -183,13 +182,6 @@ export default function RFQ() {
     setRfqData(prev => ({ ...prev, ...updates }));
   };
 
-  const addSourceLink = () => {
-    if (sourceLink.trim()) {
-      updateRfqData({ source_links: [...rfqData.source_links, sourceLink.trim()] });
-      setSourceLink('');
-    }
-  };
-
   const addCustomerLink = () => {
     if (customerLink.trim()) {
       updateRfqData({ customer_links: [...rfqData.customer_links, customerLink.trim()] });
@@ -197,12 +189,8 @@ export default function RFQ() {
     }
   };
 
-  const removeLink = (type: 'source' | 'customer', index: number) => {
-    if (type === 'source') {
-      updateRfqData({ source_links: rfqData.source_links.filter((_, i) => i !== index) });
-    } else {
-      updateRfqData({ customer_links: rfqData.customer_links.filter((_, i) => i !== index) });
-    }
+  const removeLink = (type: 'customer', index: number) => {
+    updateRfqData({ customer_links: rfqData.customer_links.filter((_, i) => i !== index) });
   };
 
   const updateCategoryAttribute = (code: string, value: any) => {
@@ -305,24 +293,20 @@ export default function RFQ() {
     setSaving(true);
     try {
       const pendingCustomer = customerLink.trim() ? [customerLink.trim()] : [];
-      const pendingSource = sourceLink.trim() ? [sourceLink.trim()] : [];
       const payload = {
         ...rfqData,
         customer_links: [...rfqData.customer_links, ...pendingCustomer],
-        source_links: [...rfqData.source_links, ...pendingSource],
         status: 'draft' as const,
         default_warehouse_id: includeShipping ? selectedWarehouseId : undefined,
         include_shipping: includeShipping,
       };
       const result = await rfqService.saveRFQ(payload);
       // Sync local state so UI reflects saved links
-      if (pendingCustomer.length || pendingSource.length) {
+      if (pendingCustomer.length) {
         updateRfqData({
           customer_links: payload.customer_links,
-          source_links: payload.source_links,
         });
         setCustomerLink('');
-        setSourceLink('');
       }
       toast({
         title: '草稿保存成功',
@@ -351,23 +335,19 @@ export default function RFQ() {
     setSaving(true);
     try {
       const pendingCustomer = customerLink.trim() ? [customerLink.trim()] : [];
-      const pendingSource = sourceLink.trim() ? [sourceLink.trim()] : [];
       const payload = {
         ...rfqData,
         customer_links: [...rfqData.customer_links, ...pendingCustomer],
-        source_links: [...rfqData.source_links, ...pendingSource],
         status: 'submitted' as const,
         default_warehouse_id: includeShipping ? selectedWarehouseId : undefined,
         include_shipping: includeShipping,
       };
       const result = await rfqService.saveRFQ(payload);
-      if (pendingCustomer.length || pendingSource.length) {
+      if (pendingCustomer.length) {
         updateRfqData({
           customer_links: payload.customer_links,
-          source_links: payload.source_links,
         });
         setCustomerLink('');
-        setSourceLink('');
       }
       toast({
         title: '提交成功',
@@ -554,11 +534,12 @@ export default function RFQ() {
                 {/* Target Market */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="country">目的国 *</Label>
+                    <Label htmlFor="country">目的国</Label>
                     <Input
                       id="country"
                       value={rfqData.target_country}
                       onChange={(e) => updateRfqData({ target_country: e.target.value })}
+                      placeholder="输入目的国..."
                     />
                   </div>
                   <div>
@@ -578,7 +559,7 @@ export default function RFQ() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="target_weight">重量 (kg)</Label>
+                    <Label htmlFor="target_weight">重量 (g)</Label>
                     <Input
                       id="target_weight"
                       type="number"
@@ -597,29 +578,6 @@ export default function RFQ() {
                       placeholder="价格"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <Label>来源链接 Source Links (1688/Amazon/Shopify)</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      placeholder="粘贴来源链接..."
-                      value={sourceLink}
-                      onChange={(e) => setSourceLink(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSourceLink()}
-                    />
-                    <Button onClick={addSourceLink}>添加</Button>
-                  </div>
-                  {rfqData.source_links.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {rfqData.source_links.map((link, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm">
-                          <Badge variant="outline" className="flex-1 justify-start truncate">{link}</Badge>
-                          <Button variant="ghost" size="sm" onClick={() => removeLink('source', i)}>删除</Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Category */}
