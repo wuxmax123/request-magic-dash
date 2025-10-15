@@ -454,14 +454,59 @@ export const rfqService = {
 
   // Admin - Attribute Management
   async createCategoryAttribute(attr: CategoryAttribute): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('category_attributes')
+      .insert({
+        category_id: attr.category_id,
+        attr_code: attr.attr_code,
+        attr_name: attr.attr_name,
+        input_type: attr.input_type,
+        required: attr.required,
+        unit: attr.unit || null,
+        help_text: attr.help_text || null,
+        options_json: attr.options_json || [],
+        visible_on_quote: attr.visible_on_quote,
+        attr_sort: attr.attr_sort,
+      });
+
+    if (error) throw error;
     return { ok: true };
   },
 
   async updateCategoryAttribute(categoryId: number, attrCode: string, attr: Partial<CategoryAttribute>): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('category_attributes')
+      .update({
+        attr_name: attr.attr_name,
+        input_type: attr.input_type,
+        required: attr.required,
+        unit: attr.unit || null,
+        help_text: attr.help_text || null,
+        options_json: attr.options_json || [],
+        visible_on_quote: attr.visible_on_quote,
+        attr_sort: attr.attr_sort,
+      })
+      .eq('category_id', categoryId)
+      .eq('attr_code', attrCode);
+
+    if (error) throw error;
     return { ok: true };
   },
 
   async deleteCategoryAttribute(categoryId: number, attrCode: string): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('category_attributes')
+      .delete()
+      .eq('category_id', categoryId)
+      .eq('attr_code', attrCode);
+
+    if (error) throw error;
     return { ok: true };
   },
 
