@@ -9,6 +9,7 @@ import RFQ from "./pages/RFQ";
 import RFQList from "./pages/RFQList";
 import QuotationRequestList from "./pages/QuotationRequestList";
 import Admin from "./pages/Admin";
+import ShippingEstimator from "./pages/ShippingEstimator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/rfq-list" element={<RFQList />} />
             <Route path="/quotation-requests" element={<QuotationRequestList />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/shipping-estimator" element={<ShippingEstimator />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

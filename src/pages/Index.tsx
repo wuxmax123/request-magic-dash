@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Settings, FileText } from 'lucide-react';
+import { Plus, Settings, FileText, Truck } from 'lucide-react';
 
 export default function Index() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function Index() {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <section className="mb-12">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/rfq')}>
                 <CardHeader>
                   <div className="flex items-center gap-4">
@@ -65,6 +65,28 @@ export default function Index() {
                   </p>
                   <Button className="mt-4 w-full">
                     查看列表 View Requests
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/shipping-estimator')}>
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <Truck className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">运费计算器</CardTitle>
+                      <CardDescription>快速估算运费</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    输入重量和目的地，快速计算多个物流渠道的运费
+                  </p>
+                  <Button className="mt-4 w-full">
+                    立即计算 Calculate Now
                   </Button>
                 </CardContent>
               </Card>

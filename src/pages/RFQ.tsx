@@ -18,9 +18,11 @@ import { AttachmentUploader } from '@/components/rfq/AttachmentUploader';
 import { SupplierTable } from '@/components/rfq/SupplierTable';
 import { QuoteDrawer } from '@/components/rfq/QuoteDrawer';
 import { ReviewPanel } from '@/components/rfq/ReviewPanel';
-import { ArrowLeft, Save, Send, Plus, AlertCircle } from 'lucide-react';
+import { ShippingSelector } from '@/components/rfq/ShippingSelector';
+import { ArrowLeft, Save, Send, Plus, AlertCircle, Package as PackageIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 
 export default function RFQ() {
   const navigate = useNavigate();
@@ -67,6 +69,12 @@ export default function RFQ() {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [attrErrors, setAttrErrors] = useState<Record<string, string>>({});
 
+  // Shipping states
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+  const [includeShipping, setIncludeShipping] = useState(false);
+  const [selectedShippingQuote, setSelectedShippingQuote] = useState<any>(null);
+
   // Quote drawer state
   const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
@@ -76,23 +84,41 @@ export default function RFQ() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [cats, modules, suppliers] = await Promise.all([
+        const [cats, modules, suppliers, warehousesData] = await Promise.all([
           rfqService.getCategoryTree(),
           rfqService.getFeatureModules(),
           rfqService.listSuppliers(),
+          import('@/services/shippingService').then(m => m.getActiveWarehouses()),
         ]);
         setCategories(cats);
         setFeatureModules(modules);
         setAvailableSuppliers(suppliers);
+        setWarehouses(warehousesData);
+
+        // Set default warehouse
+        if (warehousesData.length > 0 && !selectedWarehouseId) {
+          setSelectedWarehouseId(warehousesData[0].id);
+        }
 
         // Load existing RFQ if id is provided
         if (rfqId) {
           const existingRfq = await rfqService.getRFQById(rfqId);
           if (existingRfq) {
             setRfqData(existingRfq);
-            // 根据URL参数设置查看模式
             setIsViewMode(viewMode);
-            // 如果有tab参数，跳转到对应的tab
+            
+            // Load shipping data
+            if (existingRfq.include_shipping) {
+              setIncludeShipping(true);
+              if (existingRfq.default_warehouse_id) {
+                setSelectedWarehouseId(existingRfq.default_warehouse_id);
+              }
+              if (existingRfq.shipping_quotes && existingRfq.shipping_quotes.length > 0) {
+                const selected = existingRfq.shipping_quotes.find(q => q.is_selected);
+                setSelectedShippingQuote(selected || existingRfq.shipping_quotes[0]);
+              }
+            }
+            
             if (tabParam) {
               setActiveTab(tabParam);
             }
@@ -271,6 +297,8 @@ export default function RFQ() {
         customer_links: [...rfqData.customer_links, ...pendingCustomer],
         source_links: [...rfqData.source_links, ...pendingSource],
         status: 'draft' as const,
+        default_warehouse_id: includeShipping ? selectedWarehouseId : undefined,
+        include_shipping: includeShipping,
       };
       const result = await rfqService.saveRFQ(payload);
       // Sync local state so UI reflects saved links
@@ -315,6 +343,8 @@ export default function RFQ() {
         customer_links: [...rfqData.customer_links, ...pendingCustomer],
         source_links: [...rfqData.source_links, ...pendingSource],
         status: 'submitted' as const,
+        default_warehouse_id: includeShipping ? selectedWarehouseId : undefined,
+        include_shipping: includeShipping,
       };
       const result = await rfqService.saveRFQ(payload);
       if (pendingCustomer.length || pendingSource.length) {
@@ -428,12 +458,15 @@ export default function RFQ() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="basic">基本信息</TabsTrigger>
-            <TabsTrigger value="category">类目属性</TabsTrigger>
-            <TabsTrigger value="features">功能模块</TabsTrigger>
-            <TabsTrigger value="suppliers">供应商报价</TabsTrigger>
-            <TabsTrigger value="review">预览提交</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="basic">1. 基本信息</TabsTrigger>
+            <TabsTrigger value="category">2. 类目属性</TabsTrigger>
+            <TabsTrigger value="features">3. 功能模块</TabsTrigger>
+            <TabsTrigger value="shipping" disabled={!rfqData.target_weight_kg || !rfqData.target_country}>
+              4. 运费
+            </TabsTrigger>
+            <TabsTrigger value="suppliers">5. 供应商报价</TabsTrigger>
+            <TabsTrigger value="review">6. 预览提交</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Basic Info */}
@@ -692,7 +725,91 @@ export default function RFQ() {
             )}
           </TabsContent>
 
-          {/* Tab 4: Suppliers & Quotes */}
+          {/* Tab 4: Shipping */}
+          <TabsContent value="shipping">
+            <Card>
+              <CardHeader>
+                <CardTitle>运费选择 Shipping Options</CardTitle>
+                <CardDescription>
+                  Select shipping method and view estimated costs
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Include shipping toggle */}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={includeShipping}
+                    onCheckedChange={setIncludeShipping}
+                    disabled={isViewMode}
+                  />
+                  <Label>Include shipping cost in quotation</Label>
+                </div>
+
+                {includeShipping && (
+                  <>
+                    {/* Warehouse selector */}
+                    <div>
+                      <Label>Origin Warehouse *</Label>
+                      <Select
+                        value={selectedWarehouseId || undefined}
+                        onValueChange={setSelectedWarehouseId}
+                        disabled={isViewMode}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select warehouse" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {warehouses.map(w => (
+                            <SelectItem key={w.id} value={w.id}>
+                              {w.name_cn} ({w.city}, {w.country})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Display current weight and destination */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Product Weight</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {rfqData.target_weight_kg} kg (from Basic Info)
+                        </p>
+                      </div>
+                      <div>
+                        <Label>Destination Country</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {rfqData.target_country} (from Basic Info)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Shipping selector component */}
+                    {rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && (
+                      <ShippingSelector
+                        weight={rfqData.target_weight_kg}
+                        destinationCountry={rfqData.target_country}
+                        warehouseId={selectedWarehouseId}
+                        selectedQuoteId={selectedShippingQuote?.id}
+                        onSelectQuote={setSelectedShippingQuote}
+                        readOnly={isViewMode}
+                      />
+                    )}
+
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Shipping cost will be automatically calculated and saved when you submit the RFQ.
+                        Please ensure product weight and destination are accurate.
+                      </AlertDescription>
+                    </Alert>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 5: Suppliers & Quotes */}
           <TabsContent value="suppliers" className="space-y-6">
             <Card>
               <CardHeader>

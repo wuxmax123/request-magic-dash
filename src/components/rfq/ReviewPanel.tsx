@@ -194,6 +194,76 @@ export function ReviewPanel({
         );
       })()}
 
+      {/* Shipping Information */}
+      {rfqData.include_shipping && rfqData.shipping_quotes && rfqData.shipping_quotes.length > 0 && (() => {
+        const selectedQuote = rfqData.shipping_quotes.find(q => q.is_selected) || rfqData.shipping_quotes[0];
+        
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>运费信息 Shipping Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm font-medium">Origin Warehouse：</span>
+                  <span className="text-sm ml-2">{selectedQuote.warehouse?.name_cn}</span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium">Shipping Channel：</span>
+                  <span className="text-sm ml-2">{selectedQuote.channel?.channel_name_cn}</span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium">Product Weight：</span>
+                  <span className="text-sm ml-2">{selectedQuote.product_weight_kg} kg</span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium">Destination：</span>
+                  <span className="text-sm ml-2">{selectedQuote.destination_country}</span>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Base Freight:</span>
+                  <span>${selectedQuote.base_freight?.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Fuel Surcharge:</span>
+                  <span>${selectedQuote.fuel_surcharge?.toFixed(2)}</span>
+                </div>
+                {selectedQuote.remote_surcharge > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Remote Area Surcharge:</span>
+                    <span>${selectedQuote.remote_surcharge?.toFixed(2)}</span>
+                  </div>
+                )}
+                <Separator />
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total Shipping Cost:</span>
+                  <span className="text-primary">
+                    ${selectedQuote.total_freight?.toFixed(2)} {selectedQuote.currency}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-sm font-medium">Estimated Delivery：</span>
+                <span className="text-sm ml-2">
+                  {selectedQuote.estimated_delivery_days_min}-{selectedQuote.estimated_delivery_days_max} days
+                </span>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                Calculated at: {new Date(selectedQuote.calculated_at).toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {/* Suppliers */}
       {rfqData.suppliers.length > 0 && (
         <Card>

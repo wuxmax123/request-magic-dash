@@ -205,11 +205,61 @@ export const rfqService = {
         attachments: data.attachments,
         notes: data.notes,
         status: data.status,
+        default_warehouse_id: data.default_warehouse_id,
+        include_shipping: data.include_shipping || false,
       })
       .select()
       .single();
 
     if (error) throw error;
+
+    // Calculate and save shipping quotes if enabled
+    if (data.include_shipping && data.target_weight_kg && data.target_country && data.default_warehouse_id) {
+      const { calculateMultipleQuotes, deleteShippingQuotesForRFQ, saveShippingQuote, updateShippingQuoteSelection } = await import('@/services/shippingService');
+      
+      // Delete existing quotes
+      await deleteShippingQuotesForRFQ(rfq.id);
+      
+      // Calculate new quotes
+      const quotes = await calculateMultipleQuotes(
+        data.target_weight_kg,
+        data.default_warehouse_id,
+        data.target_country
+      );
+      
+      // Save all calculated quotes
+      for (const quote of quotes) {
+        await saveShippingQuote(rfq.id, {
+          warehouse_id: data.default_warehouse_id,
+          channel_id: quote.channel_id,
+          destination_country: data.target_country,
+          product_weight_kg: data.target_weight_kg,
+          base_freight: quote.base_freight,
+          fuel_surcharge: quote.fuel_surcharge,
+          remote_surcharge: quote.remote_surcharge,
+          total_freight: quote.total_freight,
+          currency: quote.currency,
+          estimated_delivery_days_min: quote.estimated_delivery_days_min,
+          estimated_delivery_days_max: quote.estimated_delivery_days_max,
+          calculation_details: quote.breakdown,
+          is_selected: false,
+          is_manual: false,
+          calculated_at: new Date().toISOString(),
+        });
+      }
+      
+      // Auto-select cheapest option
+      if (quotes.length > 0) {
+        const cheapest = quotes.reduce((min, q) => 
+          q.total_freight < min.total_freight ? q : min
+        );
+        const savedQuotes = await import('@/services/shippingService').then(m => m.getShippingQuotesForRFQ(rfq.id));
+        const cheapestSaved = savedQuotes.find(q => q.channel_id === cheapest.channel_id);
+        if (cheapestSaved) {
+          await updateShippingQuoteSelection(rfq.id, cheapestSaved.id);
+        }
+      }
+    }
 
     // Save suppliers
     if (data.suppliers && data.suppliers.length > 0) {
@@ -246,6 +296,13 @@ export const rfqService = {
       .single();
 
     if (error || !data) return null;
+
+    // Fetch shipping quotes if included
+    let shipping_quotes: any[] = [];
+    if (data.include_shipping) {
+      const { getShippingQuotesForRFQ } = await import('@/services/shippingService');
+      shipping_quotes = await getShippingQuotesForRFQ(data.id);
+    }
 
     return {
       inquiry_id: data.inquiry_id,
@@ -286,6 +343,9 @@ export const rfqService = {
       status: data.status as 'draft' | 'submitted' | 'approved' | 'rejected',
       created_at: data.created_at,
       updated_at: data.updated_at,
+      default_warehouse_id: data.default_warehouse_id,
+      include_shipping: data.include_shipping,
+      shipping_quotes,
     };
   },
 
