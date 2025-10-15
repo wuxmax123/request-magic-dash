@@ -77,7 +77,11 @@ export function ReviewPanel({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-sm font-medium">目的国：</span>
-              <div className="text-sm">{rfqData.target_country}</div>
+              <div className="text-sm">
+                {rfqData.target_countries && rfqData.target_countries.length > 0
+                  ? rfqData.target_countries.join(', ')
+                  : rfqData.target_country || '-'}
+              </div>
             </div>
             <div>
               <span className="text-sm font-medium">货币：</span>

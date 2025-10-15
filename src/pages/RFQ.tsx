@@ -20,6 +20,7 @@ import { QuoteDrawer } from '@/components/rfq/QuoteDrawer';
 import { QuotesViewDialog } from '@/components/rfq/QuotesViewDialog';
 import { ReviewPanel } from '@/components/rfq/ReviewPanel';
 import { ShippingSelector } from '@/components/rfq/ShippingSelector';
+import { CountryMultiSelect } from '@/components/rfq/CountryMultiSelect';
 import { ArrowLeft, Save, Send, Plus, AlertCircle, Package as PackageIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -52,6 +53,7 @@ export default function RFQ() {
     source_links: [],
     customer_links: [],
     target_country: '',
+    target_countries: [],
     currency: 'USD',
     category_l1: null,
     category_l2: null,
@@ -534,17 +536,16 @@ export default function RFQ() {
                 {/* Target Market */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="country">目的国</Label>
-                    <Input
-                      id="country"
-                      value={rfqData.target_country}
-                      onChange={(e) => updateRfqData({ target_country: e.target.value })}
-                      placeholder="输入目的国..."
+                    <Label htmlFor="countries">目的国</Label>
+                    <CountryMultiSelect
+                      value={rfqData.target_countries || []}
+                      onChange={(countries) => updateRfqData({ target_countries: countries })}
+                      disabled={isViewMode}
                     />
                   </div>
                   <div>
                     <Label htmlFor="currency">货币</Label>
-                    <Select value={rfqData.currency} onValueChange={(val) => updateRfqData({ currency: val })}>
+                    <Select value={rfqData.currency} onValueChange={(val) => updateRfqData({ currency: val })} disabled={isViewMode}>
                       <SelectTrigger id="currency">
                         <SelectValue />
                       </SelectTrigger>
