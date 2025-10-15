@@ -52,18 +52,22 @@ export function RateMatrixManager() {
           <div className="flex gap-4 mb-4">
             <div className="w-64">
               <Label>Filter by Warehouse</Label>
-              <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
+              <Select value={warehouseFilter || undefined} onValueChange={(value) => setWarehouseFilter(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All warehouses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All warehouses</SelectItem>
                   {warehouses.map(w => (
                     <SelectItem key={w.id} value={w.id}>{w.name_cn}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+            {warehouseFilter && (
+              <Button variant="outline" onClick={() => setWarehouseFilter('')} className="mt-6">
+                Clear Filter
+              </Button>
+            )}
             <Button className="mt-6">
               <Plus className="h-4 w-4 mr-2" />
               Add Rate
