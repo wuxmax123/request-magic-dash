@@ -105,6 +105,9 @@ export interface RFQData {
   status: 'draft' | 'submitted' | 'approved' | 'rejected';
   created_at?: string;
   updated_at?: string;
+  default_warehouse_id?: string;
+  include_shipping?: boolean;
+  shipping_quotes?: any[];
 }
 
 export interface ValidationError {

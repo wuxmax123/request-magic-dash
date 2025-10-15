@@ -228,6 +228,184 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_matrix: {
+        Row: {
+          additional_fee_per_step: number
+          additional_weight_step_kg: number
+          channel_id: string
+          created_at: string
+          currency: string
+          destination_country: string
+          effective_from: string
+          effective_until: string | null
+          estimated_delivery_days_max: number
+          estimated_delivery_days_min: number
+          first_weight_fee: number
+          first_weight_kg: number
+          fuel_surcharge_percent: number
+          id: string
+          is_active: boolean
+          min_charge: number
+          notes: string | null
+          remote_area_surcharge: number
+          updated_at: string
+          warehouse_id: string
+          weight_max_kg: number
+          weight_min_kg: number
+        }
+        Insert: {
+          additional_fee_per_step: number
+          additional_weight_step_kg: number
+          channel_id: string
+          created_at?: string
+          currency?: string
+          destination_country: string
+          effective_from?: string
+          effective_until?: string | null
+          estimated_delivery_days_max: number
+          estimated_delivery_days_min: number
+          first_weight_fee: number
+          first_weight_kg: number
+          fuel_surcharge_percent?: number
+          id?: string
+          is_active?: boolean
+          min_charge?: number
+          notes?: string | null
+          remote_area_surcharge?: number
+          updated_at?: string
+          warehouse_id: string
+          weight_max_kg: number
+          weight_min_kg: number
+        }
+        Update: {
+          additional_fee_per_step?: number
+          additional_weight_step_kg?: number
+          channel_id?: string
+          created_at?: string
+          currency?: string
+          destination_country?: string
+          effective_from?: string
+          effective_until?: string | null
+          estimated_delivery_days_max?: number
+          estimated_delivery_days_min?: number
+          first_weight_fee?: number
+          first_weight_kg?: number
+          fuel_surcharge_percent?: number
+          id?: string
+          is_active?: boolean
+          min_charge?: number
+          notes?: string | null
+          remote_area_surcharge?: number
+          updated_at?: string
+          warehouse_id?: string
+          weight_max_kg?: number
+          weight_min_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_matrix_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rate_matrix_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_shipping_quotes: {
+        Row: {
+          base_freight: number
+          calculated_at: string
+          calculation_details: Json | null
+          channel_id: string
+          created_at: string
+          currency: string
+          destination_country: string
+          estimated_delivery_days_max: number
+          estimated_delivery_days_min: number
+          fuel_surcharge: number
+          id: string
+          is_manual: boolean
+          is_selected: boolean
+          product_weight_kg: number
+          remote_surcharge: number
+          rfq_id: string
+          total_freight: number
+          updated_at: string
+          warehouse_id: string
+        }
+        Insert: {
+          base_freight: number
+          calculated_at?: string
+          calculation_details?: Json | null
+          channel_id: string
+          created_at?: string
+          currency?: string
+          destination_country: string
+          estimated_delivery_days_max: number
+          estimated_delivery_days_min: number
+          fuel_surcharge: number
+          id?: string
+          is_manual?: boolean
+          is_selected?: boolean
+          product_weight_kg: number
+          remote_surcharge?: number
+          rfq_id: string
+          total_freight: number
+          updated_at?: string
+          warehouse_id: string
+        }
+        Update: {
+          base_freight?: number
+          calculated_at?: string
+          calculation_details?: Json | null
+          channel_id?: string
+          created_at?: string
+          currency?: string
+          destination_country?: string
+          estimated_delivery_days_max?: number
+          estimated_delivery_days_min?: number
+          fuel_surcharge?: number
+          id?: string
+          is_manual?: boolean
+          is_selected?: boolean
+          product_weight_kg?: number
+          remote_surcharge?: number
+          rfq_id?: string
+          total_freight?: number
+          updated_at?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_shipping_quotes_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_shipping_quotes_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfq_shipping_quotes_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfqs: {
         Row: {
           attachments: string[] | null
@@ -238,10 +416,12 @@ export type Database = {
           created_at: string | null
           currency: string
           customer_links: string[] | null
+          default_warehouse_id: string | null
           feature_attributes: Json | null
           feature_modules: string[] | null
           id: string
           images: string[] | null
+          include_shipping: boolean
           inquiry_id: string
           notes: string | null
           product_name: string | null
@@ -264,10 +444,12 @@ export type Database = {
           created_at?: string | null
           currency: string
           customer_links?: string[] | null
+          default_warehouse_id?: string | null
           feature_attributes?: Json | null
           feature_modules?: string[] | null
           id?: string
           images?: string[] | null
+          include_shipping?: boolean
           inquiry_id: string
           notes?: string | null
           product_name?: string | null
@@ -290,10 +472,12 @@ export type Database = {
           created_at?: string | null
           currency?: string
           customer_links?: string[] | null
+          default_warehouse_id?: string | null
           feature_attributes?: Json | null
           feature_modules?: string[] | null
           id?: string
           images?: string[] | null
+          include_shipping?: boolean
           inquiry_id?: string
           notes?: string | null
           product_name?: string | null
@@ -307,7 +491,101 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "rfqs_default_warehouse_id_fkey"
+            columns: ["default_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipping_carriers: {
+        Row: {
+          carrier_code: string
+          carrier_name_cn: string
+          carrier_name_en: string
+          carrier_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort: number
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          carrier_code: string
+          carrier_name_cn: string
+          carrier_name_en: string
+          carrier_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort?: number
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          carrier_code?: string
+          carrier_name_cn?: string
+          carrier_name_en?: string
+          carrier_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort?: number
+          updated_at?: string
+          website?: string | null
+        }
         Relationships: []
+      }
+      shipping_channels: {
+        Row: {
+          carrier_id: string
+          channel_code: string
+          channel_name_cn: string
+          channel_name_en: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          carrier_id: string
+          channel_code: string
+          channel_name_cn: string
+          channel_name_en: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          carrier_id?: string
+          channel_code?: string
+          channel_name_cn?: string
+          channel_name_en?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_channels_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_carriers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppliers: {
         Row: {
@@ -377,15 +655,87 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      warehouses: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name_cn: string
+          name_en: string
+          province: string | null
+          sort: number
+          updated_at: string
+          warehouse_code: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_cn: string
+          name_en: string
+          province?: string | null
+          sort?: number
+          updated_at?: string
+          warehouse_code: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_cn?: string
+          name_en?: string
+          province?: string | null
+          sort?: number
+          updated_at?: string
+          warehouse_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: { check_role: string; check_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -512,6 +862,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

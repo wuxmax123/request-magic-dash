@@ -6,7 +6,10 @@ import CategoryAttributeManager from '@/components/admin/CategoryAttributeManage
 import FeatureModuleManager from '@/components/admin/FeatureModuleManager';
 import { SupplierManager } from '@/components/admin/SupplierManager';
 import { DataImporter } from '@/components/admin/DataImporter';
-import { Settings, FolderTree, ListChecks, Package, Users, Database } from 'lucide-react';
+import { WarehouseManager } from '@/components/admin/WarehouseManager';
+import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager';
+import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
+import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -23,7 +26,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="import" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="import" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
               数据导入 Import
@@ -43,6 +46,10 @@ const Admin = () => {
             <TabsTrigger value="suppliers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               供应商管理 Suppliers
+            </TabsTrigger>
+            <TabsTrigger value="logistics" className="flex items-center gap-2">
+              <Truck className="h-4 w-4" />
+              物流管理 Logistics
             </TabsTrigger>
           </TabsList>
 
@@ -94,6 +101,32 @@ const Admin = () => {
 
           <TabsContent value="suppliers">
             <SupplierManager />
+          </TabsContent>
+
+          <TabsContent value="logistics">
+            <Tabs defaultValue="warehouses" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="warehouses">仓库 Warehouses</TabsTrigger>
+                <TabsTrigger value="carriers">承运商 Carriers & Channels</TabsTrigger>
+                <TabsTrigger value="rates">运费矩阵 Rate Matrix</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="warehouses">
+                <Card>
+                  <CardContent className="pt-6">
+                    <WarehouseManager />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="carriers">
+                <CarrierChannelManager />
+              </TabsContent>
+              
+              <TabsContent value="rates">
+                <RateMatrixManager />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
