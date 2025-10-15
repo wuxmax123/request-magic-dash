@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SupplierQuote } from '@/types/rfq';
+import { SupplierQuote, CommercialTerm } from '@/types/rfq';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,10 @@ interface QuoteDrawerProps {
   supplierName: string;
   onSave: (quote: SupplierQuote) => void;
   initialData?: SupplierQuote;
+  commercialTerms: CommercialTerm[];
 }
 
-export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialData }: QuoteDrawerProps) {
+export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialData, commercialTerms }: QuoteDrawerProps) {
   const [formData, setFormData] = useState<SupplierQuote>(
     initialData || {
       currency: 'USD',
@@ -35,6 +36,7 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
       valid_until: '',
       remarks: '',
       attachments: [],
+      commercial_terms: {},
     }
   );
 
@@ -277,6 +279,70 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
               />
             </div>
           </div>
+
+          {/* Commercial Terms Section */}
+          {commercialTerms && commercialTerms.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-medium">商务条款 Commercial Terms</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {commercialTerms.map((term) => {
+                  const value = formData.commercial_terms?.[term.attr_code];
+                  const refundableValue = formData.commercial_terms?.[`${term.attr_code}_refundable`];
+                  
+                  return (
+                    <div key={term.attr_code} className="space-y-2">
+                      <Label>
+                        {term.attr_name}
+                        {term.required === 1 && <span className="text-destructive ml-1">*</span>}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type={term.input_type === 'number' ? 'number' : 'text'}
+                          value={value || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              commercial_terms: {
+                                ...prev.commercial_terms,
+                                [term.attr_code]: e.target.value
+                              }
+                            }));
+                          }}
+                          placeholder={term.help_text}
+                          className="flex-1"
+                        />
+                        {term.unit && (
+                          <span className="flex items-center px-3 border rounded-md bg-muted text-sm whitespace-nowrap">
+                            {term.unit}
+                          </span>
+                        )}
+                        {term.has_refundable_checkbox && (
+                          <label className="flex items-center gap-2 whitespace-nowrap cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={!!refundableValue}
+                              onChange={(e) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  commercial_terms: {
+                                    ...prev.commercial_terms,
+                                    [`${term.attr_code}_refundable`]: e.target.checked
+                                  }
+                                }));
+                              }}
+                              className="h-4 w-4 rounded border-input"
+                            />
+                            <span className="text-sm">可退</span>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 pt-4 border-t">

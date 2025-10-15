@@ -66,6 +66,7 @@ export interface SupplierQuote {
   valid_until: string;
   remarks: string;
   attachments: string[];
+  commercial_terms: Record<string, any>;
 }
 
 export interface Supplier {
