@@ -718,6 +718,74 @@ export default function RFQ() {
                 <CardDescription>从可用供应商列表中选择，并为其添加报价</CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Target Countries Display */}
+                {rfqData.target_countries && rfqData.target_countries.length > 0 && (
+                  <div className="mb-4 p-3 bg-muted rounded-lg">
+                    <Label className="text-sm font-medium">目的国 Destination Countries:</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {rfqData.target_countries.map((country) => {
+                        const allCountries = [
+                          { value: 'US', label: '美国 US' },
+                          { value: 'GB', label: '英国 GB' },
+                          { value: 'AU', label: '澳大利亚 AU' },
+                          { value: 'CA', label: '加拿大 CA' },
+                          { value: 'DE', label: '德国 DE' },
+                          { value: 'BE', label: '比利时 BE' },
+                          { value: 'FR', label: '法国 FR' },
+                          { value: 'IT', label: '意大利 IT' },
+                          { value: 'CH', label: '瑞士 CH' },
+                          { value: 'SE', label: '瑞典 SE' },
+                          { value: 'AE', label: '阿联酋 AE' },
+                          { value: 'AR', label: '阿根廷 AR' },
+                          { value: 'AT', label: '奥地利 AT' },
+                          { value: 'BR', label: '巴西 BR' },
+                          { value: 'CL', label: '智利 CL' },
+                          { value: 'CN', label: '中国 CN' },
+                          { value: 'CO', label: '哥伦比亚 CO' },
+                          { value: 'CZ', label: '捷克 CZ' },
+                          { value: 'DK', label: '丹麦 DK' },
+                          { value: 'EG', label: '埃及 EG' },
+                          { value: 'ES', label: '西班牙 ES' },
+                          { value: 'FI', label: '芬兰 FI' },
+                          { value: 'GR', label: '希腊 GR' },
+                          { value: 'HK', label: '香港 HK' },
+                          { value: 'HU', label: '匈牙利 HU' },
+                          { value: 'ID', label: '印度尼西亚 ID' },
+                          { value: 'IE', label: '爱尔兰 IE' },
+                          { value: 'IL', label: '以色列 IL' },
+                          { value: 'IN', label: '印度 IN' },
+                          { value: 'JP', label: '日本 JP' },
+                          { value: 'KR', label: '韩国 KR' },
+                          { value: 'MX', label: '墨西哥 MX' },
+                          { value: 'MY', label: '马来西亚 MY' },
+                          { value: 'NL', label: '荷兰 NL' },
+                          { value: 'NO', label: '挪威 NO' },
+                          { value: 'NZ', label: '新西兰 NZ' },
+                          { value: 'PH', label: '菲律宾 PH' },
+                          { value: 'PL', label: '波兰 PL' },
+                          { value: 'PT', label: '葡萄牙 PT' },
+                          { value: 'RO', label: '罗马尼亚 RO' },
+                          { value: 'RU', label: '俄罗斯 RU' },
+                          { value: 'SA', label: '沙特阿拉伯 SA' },
+                          { value: 'SG', label: '新加坡 SG' },
+                          { value: 'TH', label: '泰国 TH' },
+                          { value: 'TR', label: '土耳其 TR' },
+                          { value: 'TW', label: '台湾 TW' },
+                          { value: 'UA', label: '乌克兰 UA' },
+                          { value: 'VN', label: '越南 VN' },
+                          { value: 'ZA', label: '南非 ZA' },
+                        ];
+                        const countryInfo = allCountries.find(c => c.value === country);
+                        return (
+                          <Badge key={country} variant="secondary">
+                            {countryInfo?.label || country}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Available Suppliers Quick Add */}
                 <div className="mb-4">
                   <Label className="text-sm text-muted-foreground">可用供应商：</Label>
@@ -798,10 +866,74 @@ export default function RFQ() {
                         </p>
                       </div>
                       <div>
-                        <Label>Destination Country</Label>
-                        <p className="text-sm text-muted-foreground">
-                          {rfqData.target_country} (from Basic Info)
-                        </p>
+                        <Label>Destination Countries</Label>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {rfqData.target_countries && rfqData.target_countries.length > 0 ? (
+                            rfqData.target_countries.map((country) => {
+                              const allCountries = [
+                                { value: 'US', label: '美国 US' },
+                                { value: 'GB', label: '英国 GB' },
+                                { value: 'AU', label: '澳大利亚 AU' },
+                                { value: 'CA', label: '加拿大 CA' },
+                                { value: 'DE', label: '德国 DE' },
+                                { value: 'BE', label: '比利时 BE' },
+                                { value: 'FR', label: '法国 FR' },
+                                { value: 'IT', label: '意大利 IT' },
+                                { value: 'CH', label: '瑞士 CH' },
+                                { value: 'SE', label: '瑞典 SE' },
+                                { value: 'AE', label: '阿联酋 AE' },
+                                { value: 'AR', label: '阿根廷 AR' },
+                                { value: 'AT', label: '奥地利 AT' },
+                                { value: 'BR', label: '巴西 BR' },
+                                { value: 'CL', label: '智利 CL' },
+                                { value: 'CN', label: '中国 CN' },
+                                { value: 'CO', label: '哥伦比亚 CO' },
+                                { value: 'CZ', label: '捷克 CZ' },
+                                { value: 'DK', label: '丹麦 DK' },
+                                { value: 'EG', label: '埃及 EG' },
+                                { value: 'ES', label: '西班牙 ES' },
+                                { value: 'FI', label: '芬兰 FI' },
+                                { value: 'GR', label: '希腊 GR' },
+                                { value: 'HK', label: '香港 HK' },
+                                { value: 'HU', label: '匈牙利 HU' },
+                                { value: 'ID', label: '印度尼西亚 ID' },
+                                { value: 'IE', label: '爱尔兰 IE' },
+                                { value: 'IL', label: '以色列 IL' },
+                                { value: 'IN', label: '印度 IN' },
+                                { value: 'JP', label: '日本 JP' },
+                                { value: 'KR', label: '韩国 KR' },
+                                { value: 'MX', label: '墨西哥 MX' },
+                                { value: 'MY', label: '马来西亚 MY' },
+                                { value: 'NL', label: '荷兰 NL' },
+                                { value: 'NO', label: '挪威 NO' },
+                                { value: 'NZ', label: '新西兰 NZ' },
+                                { value: 'PH', label: '菲律宾 PH' },
+                                { value: 'PL', label: '波兰 PL' },
+                                { value: 'PT', label: '葡萄牙 PT' },
+                                { value: 'RO', label: '罗马尼亚 RO' },
+                                { value: 'RU', label: '俄罗斯 RU' },
+                                { value: 'SA', label: '沙特阿拉伯 SA' },
+                                { value: 'SG', label: '新加坡 SG' },
+                                { value: 'TH', label: '泰国 TH' },
+                                { value: 'TR', label: '土耳其 TR' },
+                                { value: 'TW', label: '台湾 TW' },
+                                { value: 'UA', label: '乌克兰 UA' },
+                                { value: 'VN', label: '越南 VN' },
+                                { value: 'ZA', label: '南非 ZA' },
+                              ];
+                              const countryInfo = allCountries.find(c => c.value === country);
+                              return (
+                                <Badge key={country} variant="outline" className="text-xs">
+                                  {countryInfo?.label || country}
+                                </Badge>
+                              );
+                            })
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              {rfqData.target_country || 'Not specified'}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
