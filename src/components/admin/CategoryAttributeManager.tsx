@@ -112,7 +112,14 @@ const CategoryAttributeManager = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.attr_code || !formData.attr_name || !formData.input_type) {
+    const l3Id = selectedCategory[2];
+    if (!l3Id) {
+      toast({ title: '请先选择L3类目', variant: 'destructive' });
+      return;
+    }
+
+    const attrCode = (formData.attr_code || '').trim();
+    if (!attrCode || !formData.attr_name || !formData.input_type) {
       toast({
         title: '请填写所有必填项',
         variant: 'destructive',
@@ -120,13 +127,24 @@ const CategoryAttributeManager = () => {
       return;
     }
 
+    // Duplicate code check within this L3 category
+    const isDuplicate = attributes.some(
+      (a) => a.attr_code === attrCode && (!editingAttribute || editingAttribute.attr_code !== attrCode)
+    );
+    if (isDuplicate) {
+      toast({ title: '属性代码已存在', description: `重复的代码: ${attrCode}`, variant: 'destructive' });
+      return;
+    }
+
     const options = optionsText
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
 
     const dataToSave = {
       ...formData,
+      category_id: formData.category_id ?? l3Id,
+      attr_code: attrCode,
       options_json: options,
     } as CategoryAttribute;
 
@@ -150,12 +168,13 @@ const CategoryAttributeManager = () => {
       }
       setIsDialogOpen(false);
       loadAttributes(selectedCategory[2]!);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: '保存失败',
-        description: '请稍后重试',
+        description: error?.message || '请稍后重试',
         variant: 'destructive',
       });
+      console.error('Create/Update category attribute failed:', error);
     }
   };
 
