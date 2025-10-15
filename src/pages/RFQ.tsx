@@ -838,7 +838,7 @@ export default function RFQ() {
                             {term.attr_name}
                             {term.required === 1 && <span className="text-destructive ml-1">*</span>}
                           </Label>
-                          <div className="flex gap-2">
+                          <div className="flex items-center gap-2">
                             <Input
                               type={term.input_type === 'number' ? 'number' : 'text'}
                               value={value || ''}
@@ -855,12 +855,12 @@ export default function RFQ() {
                               className="flex-1"
                             />
                             {term.unit && (
-                              <span className="flex items-center px-3 border rounded-md bg-muted text-sm">
+                              <span className="flex items-center px-3 border rounded-md bg-muted text-sm whitespace-nowrap">
                                 {term.unit}
                               </span>
                             )}
                             {term.has_refundable_checkbox && (
-                              <div className="flex items-center gap-2 whitespace-nowrap">
+                              <label className="flex items-center gap-2 whitespace-nowrap cursor-pointer">
                                 <input
                                   type="checkbox"
                                   checked={!!refundableValue}
@@ -873,10 +873,10 @@ export default function RFQ() {
                                       }
                                     }));
                                   }}
-                                  className="h-4 w-4"
+                                  className="h-4 w-4 rounded border-input"
                                 />
-                                <Label className="text-sm">可退</Label>
-                              </div>
+                                <span className="text-sm">可退</span>
+                              </label>
                             )}
                           </div>
                         </div>

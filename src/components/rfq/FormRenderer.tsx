@@ -86,7 +86,7 @@ export function FormRenderer({ attributes, values, onChange, errors }: FormRende
 
       case 'multiselect':
         return (
-          <div className="space-y-2">
+          <div className="flex flex-wrap gap-3">
             {attr.options_json.map((opt) => {
               const selected = Array.isArray(value) ? value.includes(opt) : false;
               return (
