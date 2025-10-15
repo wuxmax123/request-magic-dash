@@ -153,16 +153,6 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lead_time">交货期 (天) *</Label>
-                <Input
-                  id="lead_time"
-                  type="number"
-                  value={formData.lead_time_days}
-                  onChange={(e) => updateField('lead_time_days', parseInt(e.target.value) || 0)}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="weight">重量 (kg) *</Label>
                 <Input
                   id="weight"
@@ -173,6 +163,18 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="carton_qty">装箱数</Label>
+                <Input
+                  id="carton_qty"
+                  type="number"
+                  value={formData.carton_qty}
+                  onChange={(e) => updateField('carton_qty', parseInt(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="length">长 (cm)</Label>
                 <Input
@@ -200,16 +202,6 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
                   type="number"
                   value={formData.height_cm}
                   onChange={(e) => updateField('height_cm', parseFloat(e.target.value) || 0)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="carton_qty">装箱数</Label>
-                <Input
-                  id="carton_qty"
-                  type="number"
-                  value={formData.carton_qty}
-                  onChange={(e) => updateField('carton_qty', parseInt(e.target.value) || 0)}
                 />
               </div>
             </div>
