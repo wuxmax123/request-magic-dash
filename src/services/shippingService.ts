@@ -278,15 +278,37 @@ export async function deleteRateMatrix(id: string): Promise<void> {
 
 // ============= Shipping Quote Operations =============
 
+/**
+ * Calculate shipping quote for a specific channel
+ * Includes error handling and validation
+ * 
+ * @param weight - Product weight in kg
+ * @param warehouseId - Warehouse UUID
+ * @param channelId - Shipping channel UUID
+ * @param destination - Destination country code
+ * @returns Shipping estimate or null if no rate available
+ */
 export async function calculateShippingQuote(
   weight: number,
   warehouseId: string,
   channelId: string,
   destination: string
 ): Promise<ShippingEstimateResult | null> {
+  // Input validation
+  if (!weight || weight <= 0) {
+    throw new Error('Weight must be greater than 0');
+  }
+  if (weight > 1000) {
+    throw new Error('Weight exceeds maximum limit (1000kg)');
+  }
+  if (!warehouseId || !channelId || !destination) {
+    throw new Error('Missing required parameters');
+  }
+
   const rate = await findApplicableRate(weight, warehouseId, channelId, destination);
   
   if (!rate) {
+    console.warn(`No applicable rate found for: ${weight}kg, ${warehouseId}, ${channelId}, ${destination}`);
     return null;
   }
 
@@ -295,8 +317,8 @@ export async function calculateShippingQuote(
 
     return {
       channel_id: rate.channel_id,
-      carrier_name: rate.channel?.carrier?.carrier_name_cn || '',
-      channel_name: rate.channel?.channel_name_cn || '',
+      carrier_name: rate.channel?.carrier?.carrier_name_cn || 'Unknown Carrier',
+      channel_name: rate.channel?.channel_name_cn || 'Unknown Channel',
       base_freight: breakdown.base_freight,
       fuel_surcharge: breakdown.fuel_surcharge,
       remote_surcharge: breakdown.remote_surcharge,
@@ -308,27 +330,61 @@ export async function calculateShippingQuote(
     };
   } catch (error) {
     console.error('Failed to calculate shipping quote:', error);
-    return null;
+    throw new Error(`Calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
+/**
+ * Calculate shipping quotes for all available channels
+ * Optimized with parallel processing and error recovery
+ * 
+ * @param weight - Product weight in kg
+ * @param warehouseId - Warehouse UUID
+ * @param destination - Destination country code
+ * @returns Array of shipping estimates sorted by price
+ */
 export async function calculateMultipleQuotes(
   weight: number,
   warehouseId: string,
   destination: string
 ): Promise<ShippingEstimateResult[]> {
-  // Get all active channels
-  const channels = await getActiveChannels();
-  
-  // Calculate quote for each channel
-  const quotePromises = channels.map(channel =>
-    calculateShippingQuote(weight, warehouseId, channel.id, destination)
-  );
+  // Input validation
+  if (!weight || weight <= 0) {
+    throw new Error('Weight must be greater than 0');
+  }
+  if (!warehouseId || !destination) {
+    throw new Error('Warehouse and destination are required');
+  }
 
-  const quotes = await Promise.all(quotePromises);
+  try {
+    // Get all active channels
+    const channels = await getActiveChannels();
+    
+    if (channels.length === 0) {
+      console.warn('No active shipping channels available');
+      return [];
+    }
 
-  // Filter out null results
-  return quotes.filter((q): q is ShippingEstimateResult => q !== null);
+    // Calculate quote for each channel with error recovery
+    const quotePromises = channels.map(async channel => {
+      try {
+        return await calculateShippingQuote(weight, warehouseId, channel.id, destination);
+      } catch (error) {
+        console.warn(`Failed to calculate quote for channel ${channel.channel_name_cn}:`, error);
+        return null;
+      }
+    });
+
+    const quotes = await Promise.all(quotePromises);
+
+    // Filter out null results and sort by price
+    const validQuotes = quotes.filter((q): q is ShippingEstimateResult => q !== null);
+    
+    return validQuotes.sort((a, b) => a.total_freight - b.total_freight);
+  } catch (error) {
+    console.error('Failed to calculate multiple quotes:', error);
+    throw new Error('Failed to retrieve shipping options. Please try again.');
+  }
 }
 
 export async function saveShippingQuote(

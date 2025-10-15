@@ -12,21 +12,39 @@ export interface CalculateShippingCostParams {
  * Pure function with no side effects or database access
  * 
  * Algorithm:
- * 1. Calculate additional weight beyond first weight
- * 2. Calculate number of steps using Math.ceil
- * 3. Calculate base_freight = first_fee + (steps × fee_per_step)
- * 4. Apply fuel surcharge = base_freight × (fuel_percent / 100)
- * 5. Add remote area surcharge if applicable
- * 6. Ensure minimum charge is met
- * 7. Return detailed breakdown
+ * 1. Validate input parameters
+ * 2. Calculate additional weight beyond first weight
+ * 3. Calculate number of steps using Math.ceil
+ * 4. Calculate base_freight = first_fee + (steps × fee_per_step)
+ * 5. Apply fuel surcharge = base_freight × (fuel_percent / 100)
+ * 6. Add remote area surcharge if applicable
+ * 7. Ensure minimum charge is met
+ * 8. Return detailed breakdown
+ * 
+ * @throws {Error} If weight is outside valid range or inputs are invalid
  */
 export function calculateShippingCost(params: CalculateShippingCostParams): ShippingCalculationBreakdown {
   const { weight_kg, rate } = params;
 
+  // Input validation
+  if (!weight_kg || weight_kg <= 0) {
+    throw new Error('Weight must be greater than 0');
+  }
+
+  if (!rate) {
+    throw new Error('Rate matrix is required');
+  }
+
+  // Validate rate structure
+  const rateErrors = validateRateMatrix(rate);
+  if (rateErrors.length > 0) {
+    throw new Error(`Invalid rate matrix: ${rateErrors.join(', ')}`);
+  }
+
   // Ensure weight is within rate range
   if (weight_kg < rate.weight_min_kg || weight_kg > rate.weight_max_kg) {
     throw new Error(
-      `Weight ${weight_kg}kg is outside the valid range ${rate.weight_min_kg}-${rate.weight_max_kg}kg`
+      `Weight ${weight_kg}kg is outside the valid range ${rate.weight_min_kg}-${rate.weight_max_kg}kg for this shipping option`
     );
   }
 

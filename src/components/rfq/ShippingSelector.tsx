@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, Package, ChevronDown, TrendingDown, Zap } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Package, ChevronDown, TrendingDown, Zap, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { RFQShippingQuote } from '@/types/shipping';
 import * as shippingService from '@/services/shippingService';
 import { toast } from '@/hooks/use-toast';
@@ -28,19 +30,48 @@ export function ShippingSelector({
 }: ShippingSelectorProps) {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const cacheRef = useRef<Map<string, { data: any[]; timestamp: number }>>(new Map());
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-  useEffect(() => {
-    calculateShipping();
+  // Validate inputs
+  const validationError = useMemo(() => {
+    if (!weight || weight <= 0) return 'Weight must be greater than 0';
+    if (weight > 1000) return 'Weight exceeds maximum limit (1000kg)';
+    if (!destinationCountry) return 'Destination country is required';
+    if (!warehouseId) return 'Warehouse selection is required';
+    return null;
   }, [weight, destinationCountry, warehouseId]);
 
-  const calculateShipping = async () => {
-    if (!weight || !destinationCountry || !warehouseId) {
+  // Debounced calculation with caching
+  const calculateShipping = useCallback(async () => {
+    if (validationError) {
       setQuotes([]);
+      setError(validationError);
       return;
     }
 
+    // Check cache
+    const cacheKey = `${weight}-${warehouseId}-${destinationCountry}`;
+    const cached = cacheRef.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setQuotes(cached.data);
+      setError(null);
+      return;
+    }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     setLoading(true);
+    setError(null);
+
     try {
       const results = await shippingService.calculateMultipleQuotes(
         weight,
@@ -48,6 +79,12 @@ export function ShippingSelector({
         destinationCountry
       );
       
+      if (results.length === 0) {
+        setError(`No shipping options available for ${destinationCountry} at ${weight}kg`);
+        setQuotes([]);
+        return;
+      }
+
       // Convert results to quote format
       const quoteData = results.map((r, idx) => ({
         id: `quote-${idx}`,
@@ -65,6 +102,7 @@ export function ShippingSelector({
       }));
 
       setQuotes(quoteData);
+      cacheRef.current.set(cacheKey, { data: quoteData, timestamp: Date.now() });
 
       // Auto-select cheapest if no selection
       if (quoteData.length > 0 && !selectedQuoteId) {
@@ -73,34 +111,101 @@ export function ShippingSelector({
         );
         onSelectQuote(cheapest as any);
       }
-    } catch (error) {
+      
+      setRetryCount(0);
+    } catch (error: any) {
+      if (error.name === 'AbortError') return;
+      
+      const errorMessage = error.message || 'Failed to calculate shipping costs';
+      console.error('Shipping calculation error:', error);
+      
+      setError(errorMessage);
+      setQuotes([]);
+      
       toast({
         title: 'Calculation Failed',
-        description: 'Could not calculate shipping costs',
+        description: errorMessage,
         variant: 'destructive',
       });
-      setQuotes([]);
     } finally {
       setLoading(false);
     }
+  }, [weight, destinationCountry, warehouseId, selectedQuoteId, validationError, onSelectQuote]);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      calculateShipping();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [calculateShipping]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    calculateShipping();
   };
 
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Calculating shipping options...</span>
+        <CardContent className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="relative">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <Package className="h-6 w-6 absolute top-3 left-3 text-primary-foreground" />
+          </div>
+          <div className="text-center space-y-2">
+            <p className="font-medium">Calculating shipping options...</p>
+            <p className="text-sm text-muted-foreground">
+              Comparing {weight}kg to {destinationCountry}
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (quotes.length === 0) {
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="py-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              {error}
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-center mt-4">
+            <Button onClick={handleRetry} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry {retryCount > 0 && `(Attempt ${retryCount + 1})`}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (quotes.length === 0 && !validationError) {
     return (
       <Card>
-        <CardContent className="py-6 text-center text-muted-foreground">
-          No shipping options available for this destination
+        <CardContent className="py-8 text-center space-y-4">
+          <Package className="h-12 w-12 mx-auto text-muted-foreground" />
+          <div className="space-y-2">
+            <p className="font-medium text-muted-foreground">No shipping options available</p>
+            <p className="text-sm text-muted-foreground">
+              Try adjusting the weight or selecting a different warehouse
+            </p>
+          </div>
         </CardContent>
       </Card>
     );
