@@ -17,6 +17,7 @@ import { FeatureSelector } from '@/components/rfq/FeatureSelector';
 import { AttachmentUploader } from '@/components/rfq/AttachmentUploader';
 import { SupplierTable } from '@/components/rfq/SupplierTable';
 import { QuoteDrawer } from '@/components/rfq/QuoteDrawer';
+import { QuotesViewDialog } from '@/components/rfq/QuotesViewDialog';
 import { ReviewPanel } from '@/components/rfq/ReviewPanel';
 import { ShippingSelector } from '@/components/rfq/ShippingSelector';
 import { ArrowLeft, Save, Send, Plus, AlertCircle, Package as PackageIcon } from 'lucide-react';
@@ -79,6 +80,7 @@ export default function RFQ() {
 
   // Quote drawer state
   const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false);
+  const [quotesViewOpen, setQuotesViewOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   // Load initial data and existing RFQ if id is provided
@@ -238,6 +240,14 @@ export default function RFQ() {
     if (supplier) {
       setSelectedSupplier(supplier);
       setQuoteDrawerOpen(true);
+    }
+  };
+
+  const handleViewQuotes = (supplierId: number) => {
+    const supplier = rfqData.suppliers.find(s => s.supplier_id === supplierId);
+    if (supplier) {
+      setSelectedSupplier(supplier);
+      setQuotesViewOpen(true);
     }
   };
 
@@ -771,7 +781,7 @@ export default function RFQ() {
                 <SupplierTable
                   suppliers={rfqData.suppliers}
                   onAddQuote={handleAddQuote}
-                  onViewQuotes={(id) => toast({ title: '查看报价功能' })}
+                  onViewQuotes={handleViewQuotes}
                   shippingQuote={selectedShippingQuote}
                   includeShipping={includeShipping}
                 />
@@ -883,13 +893,22 @@ export default function RFQ() {
 
       {/* Quote Drawer */}
       {selectedSupplier && (
-        <QuoteDrawer
-          open={quoteDrawerOpen}
-          onOpenChange={setQuoteDrawerOpen}
-          supplierName={selectedSupplier.name}
-          onSave={handleSaveQuote}
-          commercialTerms={commercialTerms}
-        />
+        <>
+          <QuoteDrawer
+            open={quoteDrawerOpen}
+            onOpenChange={setQuoteDrawerOpen}
+            supplierName={selectedSupplier.name}
+            onSave={handleSaveQuote}
+            commercialTerms={commercialTerms}
+          />
+          <QuotesViewDialog
+            open={quotesViewOpen}
+            onOpenChange={setQuotesViewOpen}
+            supplierName={selectedSupplier.name}
+            quotes={selectedSupplier.quotes}
+            commercialTerms={commercialTerms}
+          />
+        </>
       )}
     </div>
   );
