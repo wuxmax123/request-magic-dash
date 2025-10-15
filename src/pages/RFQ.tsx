@@ -854,6 +854,8 @@ export default function RFQ() {
                   suppliers={rfqData.suppliers}
                   onAddQuote={handleAddQuote}
                   onViewQuotes={(id) => toast({ title: '查看报价功能' })}
+                  shippingQuote={selectedShippingQuote}
+                  includeShipping={includeShipping}
                 />
               </CardContent>
             </Card>

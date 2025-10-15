@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReviewPanel } from './ReviewPanel';
+import { ShippingQuoteSelector } from './ShippingQuoteSelector';
 import { rfqService } from '@/services/rfqService';
+import { getShippingQuotesForRFQ } from '@/services/shippingService';
 import { RFQData, CategoryAttribute, FeatureModuleAttribute } from '@/types/rfq';
+import { RFQShippingQuote } from '@/types/shipping';
 import { toast } from 'sonner';
+import { Package } from 'lucide-react';
 
 interface RFQDetailDialogProps {
   inquiryId: string;
@@ -17,6 +22,7 @@ export function RFQDetailDialog({ inquiryId, open, onOpenChange }: RFQDetailDial
   const [categoryPath, setCategoryPath] = useState('');
   const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
   const [featureAttributes, setFeatureAttributes] = useState<Record<string, FeatureModuleAttribute[]>>({});
+  const [shippingQuotes, setShippingQuotes] = useState<RFQShippingQuote[]>([]);
 
   useEffect(() => {
     if (open && inquiryId) {
@@ -60,6 +66,12 @@ export function RFQDetailDialog({ inquiryId, open, onOpenChange }: RFQDetailDial
         }
         setFeatureAttributes(featureAttrs);
       }
+
+      // Load shipping quotes if shipping is included
+      if (data.include_shipping && data.inquiry_id) {
+        const quotes = await getShippingQuotesForRFQ(data.inquiry_id);
+        setShippingQuotes(quotes);
+      }
     } catch (error) {
       console.error('Failed to load RFQ data:', error);
       toast.error('加载询价单失败');
@@ -83,12 +95,36 @@ export function RFQDetailDialog({ inquiryId, open, onOpenChange }: RFQDetailDial
             </div>
           </div>
         ) : rfqData ? (
-          <ReviewPanel
-            rfqData={rfqData}
-            categoryPath={categoryPath}
-            categoryAttributes={categoryAttributes}
-            featureAttributes={featureAttributes}
-          />
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">询价详情</TabsTrigger>
+              {rfqData.include_shipping && (
+                <TabsTrigger value="shipping">
+                  <Package className="h-4 w-4 mr-2" />
+                  运费方案
+                </TabsTrigger>
+              )}
+            </TabsList>
+            
+            <TabsContent value="details" className="mt-4">
+              <ReviewPanel
+                rfqData={rfqData}
+                categoryPath={categoryPath}
+                categoryAttributes={categoryAttributes}
+                featureAttributes={featureAttributes}
+              />
+            </TabsContent>
+            
+            {rfqData.include_shipping && rfqData.inquiry_id && (
+              <TabsContent value="shipping" className="mt-4">
+                <ShippingQuoteSelector
+                  rfqId={rfqData.inquiry_id}
+                  quotes={shippingQuotes}
+                  onQuoteSelected={() => loadRFQData()}
+                />
+              </TabsContent>
+            )}
+          </Tabs>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             未找到数据
