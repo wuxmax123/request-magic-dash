@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Home, Plus, Search, Image as ImageIcon } from 'lucide-react';
+import { Home, Plus, Search, Image as ImageIcon, Truck, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { rfqService } from '@/services/rfqService';
 import type { RFQData } from '@/types/rfq';
@@ -288,6 +288,7 @@ export default function QuotationRequestList() {
                   <TableHead className="min-w-[100px]">优先级 Priority</TableHead>
                   <TableHead className="min-w-[120px]">日期 Date</TableHead>
                   <TableHead className="min-w-[150px]">备注 Note</TableHead>
+                  <TableHead className="min-w-[120px]">运费 Shipping</TableHead>
                   <TableHead className="min-w-[120px]">目标 Target</TableHead>
                   <TableHead className="min-w-[100px]">操作 Menu</TableHead>
                 </TableRow>
@@ -382,6 +383,29 @@ export default function QuotationRequestList() {
                           <span className="text-sm text-muted-foreground line-clamp-2">
                             {request.notes || '-'}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          {request.include_shipping && request.shipping_quotes && request.shipping_quotes.length > 0 ? (
+                            (() => {
+                              const selectedQuote = request.shipping_quotes.find(q => q.is_selected) || request.shipping_quotes[0];
+                              return (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Truck className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <div className="font-medium">${selectedQuote.total_freight.toFixed(2)}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {selectedQuote.estimated_delivery_days_min}-{selectedQuote.estimated_delivery_days_max}d
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          ) : (
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                              <X className="h-3 w-3" />
+                              <span>N/A</span>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">

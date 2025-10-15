@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, Plus, FileText, Truck, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const statusMap = {
@@ -96,35 +96,55 @@ export default function RFQList() {
                     <TableHead>客户需求</TableHead>
                     <TableHead>目标国家</TableHead>
                     <TableHead>货币</TableHead>
+                    <TableHead>运费</TableHead>
                     <TableHead>状态</TableHead>
                     <TableHead>创建时间</TableHead>
                     <TableHead className="text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rfqs.map((rfq) => (
-                    <TableRow key={rfq.inquiry_id}>
-                      <TableCell className="font-mono text-sm">{rfq.inquiry_id}</TableCell>
-                      <TableCell className="max-w-xs truncate">{rfq.title || '-'}</TableCell>
-                      <TableCell>{rfq.target_country}</TableCell>
-                      <TableCell>{rfq.currency}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusMap[rfq.status].variant}>
-                          {statusMap[rfq.status].label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(rfq.created_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/rfq?id=${rfq.inquiry_id}`)}
-                        >
-                          查看
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {rfqs.map((rfq) => {
+                    const selectedQuote = rfq.shipping_quotes?.find(q => q.is_selected) || rfq.shipping_quotes?.[0];
+                    
+                    return (
+                      <TableRow key={rfq.inquiry_id}>
+                        <TableCell className="font-mono text-sm">{rfq.inquiry_id}</TableCell>
+                        <TableCell className="max-w-xs truncate">{rfq.title || '-'}</TableCell>
+                        <TableCell>{rfq.target_country}</TableCell>
+                        <TableCell>{rfq.currency}</TableCell>
+                        <TableCell>
+                          {rfq.include_shipping && selectedQuote ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Truck className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                ${selectedQuote.total_freight.toFixed(2)}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                              <X className="h-3 w-3" />
+                              <span>不含运费</span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusMap[rfq.status].variant}>
+                            {statusMap[rfq.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(rfq.created_at)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/rfq?id=${rfq.inquiry_id}`)}
+                          >
+                            查看
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>

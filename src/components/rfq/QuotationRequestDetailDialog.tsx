@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Image as ImageIcon } from 'lucide-react';
 import type { RFQData } from '@/types/rfq';
+import { ShippingQuoteSelector } from './ShippingQuoteSelector';
 
 interface QuotationRequestDetailDialogProps {
   request: RFQData & {
@@ -19,6 +24,7 @@ export function QuotationRequestDetailDialog({
   open, 
   onOpenChange 
 }: QuotationRequestDetailDialogProps) {
+  const [activeTab, setActiveTab] = useState('details');
   const getStatusConfig = (status: string) => {
     const configs = {
       draft: { label: '草稿', variant: 'secondary' as const },
@@ -68,7 +74,15 @@ export function QuotationRequestDetailDialog({
           <DialogTitle>报价请求详情</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">基本信息</TabsTrigger>
+            <TabsTrigger value="shipping" disabled={!request.include_shipping || !request.shipping_quotes?.length}>
+              运费方案 {request.shipping_quotes?.length ? `(${request.shipping_quotes.length})` : ''}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="space-y-4 mt-4">
           {/* 基本信息 */}
           <Card>
             <CardHeader>
@@ -225,7 +239,21 @@ export function QuotationRequestDetailDialog({
               </CardContent>
             </Card>
           )}
-        </div>
+
+          </TabsContent>
+
+          <TabsContent value="shipping" className="space-y-4 mt-4">
+            {request.shipping_quotes && request.shipping_quotes.length > 0 && (
+              <ShippingQuoteSelector
+                rfqId={request.inquiry_id!}
+                quotes={request.shipping_quotes}
+                onQuoteSelected={() => {
+                  // Reload could be triggered here if needed
+                }}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
