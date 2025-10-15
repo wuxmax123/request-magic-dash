@@ -1,21 +1,20 @@
 import { useState } from 'react';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const topCountries = [
   { value: 'US', label: '美国 US' },
@@ -82,6 +81,7 @@ interface CountryMultiSelectProps {
 
 export function CountryMultiSelect({ value = [], onChange, disabled }: CountryMultiSelectProps) {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSelect = (countryValue: string) => {
     const newValue = value.includes(countryValue)
@@ -99,66 +99,97 @@ export function CountryMultiSelect({ value = [], onChange, disabled }: CountryMu
     return country?.label || countryValue;
   };
 
+  const filteredTopCountries = topCountries.filter((country) =>
+    country.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredOtherCountries = otherCountries.filter((country) =>
+    country.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-2">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            role="combobox"
-            aria-expanded={open}
             className="w-full justify-between"
             disabled={disabled}
           >
             <span className="truncate">
               {value.length > 0 ? `已选择 ${value.length} 个国家` : '选择目的国...'}
             </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0 bg-popover z-50" align="start">
-          <Command>
-            <CommandInput placeholder="搜索国家..." />
-            <CommandList>
-              <CommandEmpty>未找到国家</CommandEmpty>
-              <CommandGroup heading="热门国家">
-                {topCountries.map((country) => (
-                  <CommandItem
-                    key={country.value}
-                    value={country.label}
-                    onSelect={() => handleSelect(country.value)}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        value.includes(country.value) ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    {country.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandGroup heading="其他国家">
-                {otherCountries.map((country) => (
-                  <CommandItem
-                    key={country.value}
-                    value={country.label}
-                    onSelect={() => handleSelect(country.value)}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        value.includes(country.value) ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    {country.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[400px] p-0 bg-popover" align="start">
+          <div className="p-2">
+            <Input
+              placeholder="搜索国家..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="h-8"
+            />
+          </div>
+          <DropdownMenuSeparator />
+          <ScrollArea className="h-[300px]">
+            {filteredTopCountries.length > 0 && (
+              <>
+                <DropdownMenuLabel>热门国家</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  {filteredTopCountries.map((country) => (
+                    <DropdownMenuItem
+                      key={country.value}
+                      className="cursor-pointer"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleSelect(country.value);
+                      }}
+                    >
+                      <Checkbox
+                        checked={value.includes(country.value)}
+                        className="mr-2"
+                      />
+                      {country.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
+            
+            {filteredOtherCountries.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>其他国家</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  {filteredOtherCountries.map((country) => (
+                    <DropdownMenuItem
+                      key={country.value}
+                      className="cursor-pointer"
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleSelect(country.value);
+                      }}
+                    >
+                      <Checkbox
+                        checked={value.includes(country.value)}
+                        className="mr-2"
+                      />
+                      {country.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
+
+            {filteredTopCountries.length === 0 && filteredOtherCountries.length === 0 && (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                未找到国家
+              </div>
+            )}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -169,6 +200,7 @@ export function CountryMultiSelect({ value = [], onChange, disabled }: CountryMu
                 type="button"
                 className="ml-1 rounded-full hover:bg-muted"
                 onClick={() => handleRemove(countryValue)}
+                disabled={disabled}
               >
                 <X className="h-3 w-3" />
               </button>
