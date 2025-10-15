@@ -462,16 +462,13 @@ export default function RFQ() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="basic">1. 基本信息</TabsTrigger>
             <TabsTrigger value="category">2. 类目属性</TabsTrigger>
             <TabsTrigger value="features">3. 功能模块</TabsTrigger>
             <TabsTrigger value="commercial">4. 商务条款</TabsTrigger>
-            <TabsTrigger value="shipping" disabled={!rfqData.target_weight_kg || !rfqData.target_country}>
-              5. 运费
-            </TabsTrigger>
-            <TabsTrigger value="suppliers">6. 供应商报价</TabsTrigger>
-            <TabsTrigger value="review">7. 预览提交</TabsTrigger>
+            <TabsTrigger value="suppliers">5. 供应商&运费</TabsTrigger>
+            <TabsTrigger value="review">6. 预览提交</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Basic Info */}
@@ -730,8 +727,59 @@ export default function RFQ() {
             )}
           </TabsContent>
 
-          {/* Tab 4: Shipping */}
-          <TabsContent value="shipping">
+          {/* Tab 5: Suppliers & Shipping */}
+          <TabsContent value="suppliers" className="space-y-6">
+            {/* Suppliers Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>选择供应商</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Show available suppliers picker
+                      const supplierId = availableSuppliers[0]?.supplier_id;
+                      if (supplierId) addSupplierToRfq(supplierId);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    添加供应商
+                  </Button>
+                </CardTitle>
+                <CardDescription>从可用供应商列表中选择，并为其添加报价</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Available Suppliers Quick Add */}
+                <div className="mb-4">
+                  <Label className="text-sm text-muted-foreground">可用供应商：</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {availableSuppliers
+                      .filter(s => !rfqData.suppliers.find(rs => rs.supplier_id === s.supplier_id))
+                      .map(supplier => (
+                        <Button
+                          key={supplier.supplier_id}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSupplierToRfq(supplier.supplier_id)}
+                        >
+                          {supplier.name}
+                        </Button>
+                      ))}
+                  </div>
+                </div>
+
+                <SupplierTable
+                  suppliers={rfqData.suppliers}
+                  onAddQuote={handleAddQuote}
+                  onViewQuotes={(id) => toast({ title: '查看报价功能' })}
+                  shippingQuote={selectedShippingQuote}
+                  includeShipping={includeShipping}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Shipping Section */}
             <Card>
               <CardHeader>
                 <CardTitle>运费选择 Shipping Options</CardTitle>
@@ -888,59 +936,7 @@ export default function RFQ() {
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Shipping */}
-          <TabsContent value="shipping" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>选择供应商</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Show available suppliers picker
-                      const supplierId = availableSuppliers[0]?.supplier_id;
-                      if (supplierId) addSupplierToRfq(supplierId);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    添加供应商
-                  </Button>
-                </CardTitle>
-                <CardDescription>从可用供应商列表中选择，并为其添加报价</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Available Suppliers Quick Add */}
-                <div className="mb-4">
-                  <Label className="text-sm text-muted-foreground">可用供应商：</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {availableSuppliers
-                      .filter(s => !rfqData.suppliers.find(rs => rs.supplier_id === s.supplier_id))
-                      .map(supplier => (
-                        <Button
-                          key={supplier.supplier_id}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addSupplierToRfq(supplier.supplier_id)}
-                        >
-                          {supplier.name}
-                        </Button>
-                      ))}
-                  </div>
-                </div>
-
-                <SupplierTable
-                  suppliers={rfqData.suppliers}
-                  onAddQuote={handleAddQuote}
-                  onViewQuotes={(id) => toast({ title: '查看报价功能' })}
-                  shippingQuote={selectedShippingQuote}
-                  includeShipping={includeShipping}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Tab 5: Review & Submit */}
+          {/* Tab 6: Review & Submit */}
           <TabsContent value="review">
             <Card>
               <CardHeader>
