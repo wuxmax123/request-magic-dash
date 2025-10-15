@@ -42,6 +42,11 @@ export interface FeatureModule {
   description?: string;
 }
 
+export interface CommercialTerm extends AttributeDefinition {
+  id?: string;
+  has_refundable_checkbox?: boolean;
+}
+
 // Quote Types
 export interface SupplierQuote {
   quote_id?: string;
@@ -98,6 +103,7 @@ export interface RFQData {
   feature_modules: string[];
   attributes: Record<string, any>;
   feature_attributes: Record<string, Record<string, any>>;
+  commercial_terms: Record<string, any>;
   suppliers: Supplier[];
   images: string[];
   attachments: string[];

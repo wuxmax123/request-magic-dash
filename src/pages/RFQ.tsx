@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { RFQData, Category, CategoryAttribute, FeatureModule, FeatureModuleAttribute, Supplier, ValidationError } from '@/types/rfq';
+import { RFQData, Category, CategoryAttribute, FeatureModule, FeatureModuleAttribute, CommercialTerm, Supplier, ValidationError } from '@/types/rfq';
 import { rfqService } from '@/services/rfqService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,7 @@ export default function RFQ() {
   const [featureModules, setFeatureModules] = useState<FeatureModule[]>([]);
   const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttribute[]>([]);
   const [featureAttrsMap, setFeatureAttrsMap] = useState<Record<string, FeatureModuleAttribute[]>>({});
+  const [commercialTerms, setCommercialTerms] = useState<CommercialTerm[]>([]);
   const [availableSuppliers, setAvailableSuppliers] = useState<Supplier[]>([]);
 
   // RFQ form data
@@ -57,6 +58,7 @@ export default function RFQ() {
     feature_modules: [],
     attributes: {},
     feature_attributes: {},
+    commercial_terms: {},
     suppliers: [],
     images: [],
     attachments: [],
@@ -84,16 +86,18 @@ export default function RFQ() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [cats, modules, suppliers, warehousesData] = await Promise.all([
+        const [cats, modules, suppliers, warehousesData, terms] = await Promise.all([
           rfqService.getCategoryTree(),
           rfqService.getFeatureModules(),
           rfqService.listSuppliers(),
           import('@/services/shippingService').then(m => m.getActiveWarehouses()),
+          rfqService.getCommercialTerms(),
         ]);
         setCategories(cats);
         setFeatureModules(modules);
         setAvailableSuppliers(suppliers);
         setWarehouses(warehousesData);
+        setCommercialTerms(terms);
 
         // Set default warehouse
         if (warehousesData.length > 0 && !selectedWarehouseId) {
@@ -458,15 +462,16 @@ export default function RFQ() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="basic">1. 基本信息</TabsTrigger>
             <TabsTrigger value="category">2. 类目属性</TabsTrigger>
             <TabsTrigger value="features">3. 功能模块</TabsTrigger>
+            <TabsTrigger value="commercial">4. 商务条款</TabsTrigger>
             <TabsTrigger value="shipping" disabled={!rfqData.target_weight_kg || !rfqData.target_country}>
-              4. 运费
+              5. 运费
             </TabsTrigger>
-            <TabsTrigger value="suppliers">5. 供应商报价</TabsTrigger>
-            <TabsTrigger value="review">6. 预览提交</TabsTrigger>
+            <TabsTrigger value="suppliers">6. 供应商报价</TabsTrigger>
+            <TabsTrigger value="review">7. 预览提交</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Basic Info */}
@@ -809,8 +814,82 @@ export default function RFQ() {
             </Card>
           </TabsContent>
 
-          {/* Tab 5: Suppliers & Quotes */}
-          <TabsContent value="suppliers" className="space-y-6">
+          {/* Tab 4: Commercial Terms */}
+          <TabsContent value="commercial" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>商务条款 Commercial Terms</CardTitle>
+                <CardDescription>填写包装、交期、打样费等商务条款信息</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {commercialTerms.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    暂无商务条款，请在系统管理中配置
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    {commercialTerms.map((term) => {
+                      const value = rfqData.commercial_terms?.[term.attr_code];
+                      const refundableValue = rfqData.commercial_terms?.[`${term.attr_code}_refundable`];
+                      
+                      return (
+                        <div key={term.attr_code} className="space-y-2">
+                          <Label>
+                            {term.attr_name}
+                            {term.required === 1 && <span className="text-destructive ml-1">*</span>}
+                          </Label>
+                          <div className="flex gap-2">
+                            <Input
+                              type={term.input_type === 'number' ? 'number' : 'text'}
+                              value={value || ''}
+                              onChange={(e) => {
+                                setRfqData(prev => ({
+                                  ...prev,
+                                  commercial_terms: {
+                                    ...prev.commercial_terms,
+                                    [term.attr_code]: e.target.value
+                                  }
+                                }));
+                              }}
+                              placeholder={term.help_text}
+                              className="flex-1"
+                            />
+                            {term.unit && (
+                              <span className="flex items-center px-3 border rounded-md bg-muted text-sm">
+                                {term.unit}
+                              </span>
+                            )}
+                            {term.has_refundable_checkbox && (
+                              <div className="flex items-center gap-2 whitespace-nowrap">
+                                <input
+                                  type="checkbox"
+                                  checked={!!refundableValue}
+                                  onChange={(e) => {
+                                    setRfqData(prev => ({
+                                      ...prev,
+                                      commercial_terms: {
+                                        ...prev.commercial_terms,
+                                        [`${term.attr_code}_refundable`]: e.target.checked
+                                      }
+                                    }));
+                                  }}
+                                  className="h-4 w-4"
+                                />
+                                <Label className="text-sm">可退</Label>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 5: Shipping */}
+          <TabsContent value="shipping" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">

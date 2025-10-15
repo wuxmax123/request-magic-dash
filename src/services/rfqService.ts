@@ -4,7 +4,8 @@ import {
   FeatureModule, 
   FeatureModuleAttribute,
   RFQData,
-  Supplier 
+  Supplier,
+  CommercialTerm
 } from '@/types/rfq';
 import { categoryService } from './categoryService';
 import { 
@@ -201,6 +202,7 @@ export const rfqService = {
         feature_modules: data.feature_modules,
         attributes: data.attributes,
         feature_attributes: data.feature_attributes,
+        commercial_terms: data.commercial_terms,
         images: data.images,
         attachments: data.attachments,
         notes: data.notes,
@@ -321,6 +323,7 @@ export const rfqService = {
       feature_modules: data.feature_modules || [],
       attributes: (data.attributes as any) || {},
       feature_attributes: (data.feature_attributes as any) || {},
+      commercial_terms: (data.commercial_terms as any) || {},
       suppliers: (data.suppliers || []).map((s: any) => ({
         supplier_id: s.supplier_id,
         name: s.name,
@@ -375,6 +378,7 @@ export const rfqService = {
       feature_modules: rfq.feature_modules || [],
       attributes: (rfq.attributes as any) || {},
       feature_attributes: (rfq.feature_attributes as any) || {},
+      commercial_terms: (rfq.commercial_terms as any) || {},
       suppliers: [],
       images: rfq.images || [],
       attachments: rfq.attachments || [],
@@ -504,6 +508,89 @@ export const rfqService = {
       .from('category_attributes')
       .delete()
       .eq('category_id', categoryId)
+      .eq('attr_code', attrCode);
+
+    if (error) throw error;
+    return { ok: true };
+  },
+
+  // Admin - Commercial Terms Management
+  async getCommercialTerms(): Promise<CommercialTerm[]> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { data, error } = await supabase
+      .from('commercial_terms')
+      .select('*')
+      .order('attr_sort', { ascending: true });
+
+    if (error) throw error;
+    
+    return (data || []).map(term => ({
+      id: term.id,
+      attr_code: term.attr_code,
+      attr_name: term.attr_name,
+      input_type: term.input_type as any,
+      required: term.required as 0 | 1,
+      unit: term.unit || '',
+      options_json: (Array.isArray(term.options_json) ? term.options_json : []) as string[],
+      help_text: term.help_text || '',
+      visible_on_quote: term.visible_on_quote as 0 | 1,
+      attr_sort: term.attr_sort,
+      has_refundable_checkbox: term.has_refundable_checkbox || false,
+    }));
+  },
+
+  async createCommercialTerm(term: CommercialTerm): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('commercial_terms')
+      .insert({
+        attr_code: term.attr_code,
+        attr_name: term.attr_name,
+        input_type: term.input_type,
+        required: term.required,
+        unit: term.unit || null,
+        help_text: term.help_text || null,
+        options_json: term.options_json || [],
+        visible_on_quote: term.visible_on_quote,
+        attr_sort: term.attr_sort,
+        has_refundable_checkbox: term.has_refundable_checkbox || false,
+      });
+
+    if (error) throw error;
+    return { ok: true };
+  },
+
+  async updateCommercialTerm(attrCode: string, term: Partial<CommercialTerm>): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const updateData: any = {};
+    if (term.attr_name !== undefined) updateData.attr_name = term.attr_name;
+    if (term.input_type !== undefined) updateData.input_type = term.input_type;
+    if (term.required !== undefined) updateData.required = term.required;
+    if (term.unit !== undefined) updateData.unit = term.unit || null;
+    if (term.help_text !== undefined) updateData.help_text = term.help_text || null;
+    if (term.options_json !== undefined) updateData.options_json = term.options_json || [];
+    if (term.visible_on_quote !== undefined) updateData.visible_on_quote = term.visible_on_quote;
+    if (term.attr_sort !== undefined) updateData.attr_sort = term.attr_sort;
+    if (term.has_refundable_checkbox !== undefined) updateData.has_refundable_checkbox = term.has_refundable_checkbox;
+    
+    const { error } = await supabase
+      .from('commercial_terms')
+      .update(updateData)
+      .eq('attr_code', attrCode);
+
+    if (error) throw error;
+    return { ok: true };
+  },
+
+  async deleteCommercialTerm(attrCode: string): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('commercial_terms')
+      .delete()
       .eq('attr_code', attrCode);
 
     if (error) throw error;

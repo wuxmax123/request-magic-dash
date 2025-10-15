@@ -145,6 +145,54 @@ export type Database = {
           },
         ]
       }
+      commercial_terms: {
+        Row: {
+          attr_code: string
+          attr_name: string
+          attr_sort: number | null
+          created_at: string | null
+          has_refundable_checkbox: boolean | null
+          help_text: string | null
+          id: string
+          input_type: string
+          options_json: Json | null
+          required: number | null
+          unit: string | null
+          updated_at: string | null
+          visible_on_quote: number | null
+        }
+        Insert: {
+          attr_code: string
+          attr_name: string
+          attr_sort?: number | null
+          created_at?: string | null
+          has_refundable_checkbox?: boolean | null
+          help_text?: string | null
+          id?: string
+          input_type: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Update: {
+          attr_code?: string
+          attr_name?: string
+          attr_sort?: number | null
+          created_at?: string | null
+          has_refundable_checkbox?: boolean | null
+          help_text?: string | null
+          id?: string
+          input_type?: string
+          options_json?: Json | null
+          required?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          visible_on_quote?: number | null
+        }
+        Relationships: []
+      }
       feature_attributes: {
         Row: {
           attr_code: string
@@ -413,6 +461,7 @@ export type Database = {
           category_l1: number | null
           category_l2: number | null
           category_l3: number | null
+          commercial_terms: Json | null
           created_at: string | null
           currency: string
           customer_links: string[] | null
@@ -441,6 +490,7 @@ export type Database = {
           category_l1?: number | null
           category_l2?: number | null
           category_l3?: number | null
+          commercial_terms?: Json | null
           created_at?: string | null
           currency: string
           customer_links?: string[] | null
@@ -469,6 +519,7 @@ export type Database = {
           category_l1?: number | null
           category_l2?: number | null
           category_l3?: number | null
+          commercial_terms?: Json | null
           created_at?: string | null
           currency?: string
           customer_links?: string[] | null

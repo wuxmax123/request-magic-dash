@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import CategoryManager from '@/components/admin/CategoryManager';
 import CategoryAttributeManager from '@/components/admin/CategoryAttributeManager';
 import FeatureModuleManager from '@/components/admin/FeatureModuleManager';
+import CommercialTermsManager from '@/components/admin/CommercialTermsManager';
 import { SupplierManager } from '@/components/admin/SupplierManager';
 import { DataImporter } from '@/components/admin/DataImporter';
 import { WarehouseManager } from '@/components/admin/WarehouseManager';
 import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager';
 import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
-import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck } from 'lucide-react';
+import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -26,7 +27,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="import" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="import" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
               数据导入 Import
@@ -42,6 +43,10 @@ const Admin = () => {
             <TabsTrigger value="features" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
               功能模块 Features
+            </TabsTrigger>
+            <TabsTrigger value="commercial" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              商务条款 Commercial
             </TabsTrigger>
             <TabsTrigger value="suppliers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -95,6 +100,20 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <FeatureModuleManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="commercial">
+            <Card>
+              <CardHeader>
+                <CardTitle>商务条款管理 Commercial Terms Management</CardTitle>
+                <CardDescription>
+                  管理通用商务条款属性，如包装、交期、打样费等 / Manage commercial terms like package, lead time, sample fees
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CommercialTermsManager />
               </CardContent>
             </Card>
           </TabsContent>
