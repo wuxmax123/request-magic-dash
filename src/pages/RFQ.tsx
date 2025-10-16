@@ -939,7 +939,7 @@ export default function RFQ() {
                     </div>
 
                     {/* Preview Button */}
-                    {rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && !showShippingPreview && (
+                    {rfqData.target_weight_kg && rfqData.target_countries && rfqData.target_countries.length > 0 && selectedWarehouseId && !showShippingPreview && (
                       <div className="flex justify-center">
                         <Button
                           variant="outline"
@@ -954,7 +954,7 @@ export default function RFQ() {
                     )}
 
                     {/* Shipping selector component */}
-                    {showShippingPreview && rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && (
+                    {showShippingPreview && rfqData.target_weight_kg && rfqData.target_countries && rfqData.target_countries.length > 0 && selectedWarehouseId && (
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-medium">运费方案预览 Shipping Preview</h4>
@@ -969,7 +969,7 @@ export default function RFQ() {
                         </div>
                         <ShippingSelector
                           weight={rfqData.target_weight_kg}
-                          destinationCountry={rfqData.target_country}
+                          destinationCountry={rfqData.target_countries[0]}
                           warehouseId={selectedWarehouseId}
                           selectedQuoteId={selectedShippingQuote?.id}
                           onSelectQuote={setSelectedShippingQuote}
