@@ -80,7 +80,7 @@ export function ShippingSelector({
       );
       
       if (results.length === 0) {
-        setError(`No shipping options available for ${destinationCountry} at ${weight}kg`);
+        setError(`No shipping options available for ${destinationCountry} at ${weight}g`);
         setQuotes([]);
         return;
       }
@@ -166,7 +166,7 @@ export function ShippingSelector({
           <div className="text-center space-y-2">
             <p className="font-medium">Calculating shipping options...</p>
             <p className="text-sm text-muted-foreground">
-              Comparing {weight}kg to {destinationCountry}
+              Comparing {weight}g to {destinationCountry}
             </p>
           </div>
         </CardContent>

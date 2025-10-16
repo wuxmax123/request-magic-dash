@@ -135,14 +135,14 @@ export default function ShippingEstimator() {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               <div>
-                <Label>Product Weight (kg) *</Label>
+                <Label>Product Weight (g) *</Label>
                 <Input
                   type="number"
                   step="0.01"
                   min="0.01"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  placeholder="e.g., 0.45"
+                  placeholder="e.g., 450"
                 />
               </div>
               <div>

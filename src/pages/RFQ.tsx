@@ -862,7 +862,7 @@ export default function RFQ() {
                       <div>
                         <Label>Product Weight</Label>
                         <p className="text-sm text-muted-foreground">
-                          {rfqData.target_weight_kg} kg (from Basic Info)
+                          {rfqData.target_weight_kg} g (from Basic Info)
                         </p>
                       </div>
                       <div>
