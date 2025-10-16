@@ -21,7 +21,7 @@ import { QuotesViewDialog } from '@/components/rfq/QuotesViewDialog';
 import { ReviewPanel } from '@/components/rfq/ReviewPanel';
 import { ShippingSelector } from '@/components/rfq/ShippingSelector';
 import { CountryMultiSelect } from '@/components/rfq/CountryMultiSelect';
-import { ArrowLeft, Save, Send, Plus, AlertCircle, Package as PackageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Send, Plus, AlertCircle, Package as PackageIcon, Eye, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
@@ -78,6 +78,7 @@ export default function RFQ() {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
   const [includeShipping, setIncludeShipping] = useState(false);
   const [selectedShippingQuote, setSelectedShippingQuote] = useState<any>(null);
+  const [showShippingPreview, setShowShippingPreview] = useState(false);
 
   // Quote drawer state
   const [quoteDrawerOpen, setQuoteDrawerOpen] = useState(false);
@@ -937,23 +938,52 @@ export default function RFQ() {
                       </div>
                     </div>
 
+                    {/* Preview Button */}
+                    {rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && !showShippingPreview && (
+                      <div className="flex justify-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowShippingPreview(true)}
+                          disabled={isViewMode}
+                          className="gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          预览运费方案 Preview Shipping Options
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Shipping selector component */}
-                    {rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && (
-                      <ShippingSelector
-                        weight={rfqData.target_weight_kg}
-                        destinationCountry={rfqData.target_country}
-                        warehouseId={selectedWarehouseId}
-                        selectedQuoteId={selectedShippingQuote?.id}
-                        onSelectQuote={setSelectedShippingQuote}
-                        readOnly={isViewMode}
-                      />
+                    {showShippingPreview && rfqData.target_weight_kg && rfqData.target_country && selectedWarehouseId && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium">运费方案预览 Shipping Preview</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowShippingPreview(false)}
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            关闭预览 Close
+                          </Button>
+                        </div>
+                        <ShippingSelector
+                          weight={rfqData.target_weight_kg}
+                          destinationCountry={rfqData.target_country}
+                          warehouseId={selectedWarehouseId}
+                          selectedQuoteId={selectedShippingQuote?.id}
+                          onSelectQuote={setSelectedShippingQuote}
+                          readOnly={isViewMode}
+                        />
+                      </div>
                     )}
 
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Shipping cost will be automatically calculated and saved when you submit the RFQ.
-                        Please ensure product weight and destination are accurate.
+                        {showShippingPreview 
+                          ? '请从上方选择合适的运费方案。Shipping cost will be saved when you submit the RFQ.'
+                          : '点击"预览运费方案"按钮查看可用的运费选项。Click "Preview Shipping Options" to view available shipping methods.'}
                       </AlertDescription>
                     </Alert>
                   </>
