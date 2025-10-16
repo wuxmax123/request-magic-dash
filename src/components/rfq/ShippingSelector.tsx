@@ -40,7 +40,7 @@ export function ShippingSelector({
   // Validate inputs
   const validationError = useMemo(() => {
     if (!weight || weight <= 0) return 'Weight must be greater than 0';
-    if (weight > 1000000) return 'Weight exceeds maximum limit (1000000g)';
+    if (weight > 1000) return 'Weight exceeds maximum limit (1000kg)';
     if (!destinationCountries || destinationCountries.length === 0) return 'Destination country is required';
     if (!warehouseId) return 'Warehouse selection is required';
     return null;
@@ -171,7 +171,7 @@ export function ShippingSelector({
           <div className="text-center space-y-2">
             <p className="font-medium">Calculating shipping options...</p>
             <p className="text-sm text-muted-foreground">
-              Comparing {weight}g to {destinationCountries.join(', ')}
+              Comparing {Math.round(weight * 1000)}g to {destinationCountries.join(', ')}
             </p>
           </div>
         </CardContent>
@@ -244,7 +244,24 @@ export function ShippingSelector({
       <CardContent className="space-y-6">
         {destinationCountries.map((country) => {
           const quotes = quotesByCountry[country] || [];
-          if (quotes.length === 0) return null;
+          
+          if (quotes.length === 0) {
+            return (
+              <div key={country} className="space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <Badge variant="secondary" className="text-sm">
+                    {countryLabels[country] || country}
+                  </Badge>
+                </div>
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    No shipping options available for this country with the current weight and warehouse selection.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            );
+          }
 
           return (
             <div key={country} className="space-y-3">

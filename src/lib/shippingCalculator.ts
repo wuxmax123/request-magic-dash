@@ -100,8 +100,10 @@ export function calculateShippingCost(params: CalculateShippingCostParams): Ship
 export function validateRateMatrix(rate: Partial<RateMatrix>): string[] {
   const errors: string[] = [];
 
-  if (!rate.weight_min_kg || rate.weight_min_kg <= 0) {
-    errors.push('Minimum weight must be greater than 0');
+  if (rate.weight_min_kg === undefined || rate.weight_min_kg === null) {
+    errors.push('Minimum weight is required');
+  } else if (rate.weight_min_kg < 0) {
+    errors.push('Minimum weight cannot be negative');
   }
 
   if (!rate.weight_max_kg || rate.weight_max_kg <= 0) {
