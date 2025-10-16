@@ -13,7 +13,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface ShippingSelectorProps {
   weight: number;
-  destinationCountry: string;
+  destinationCountries: string[];
   warehouseId?: string;
   selectedQuoteId?: string;
   onSelectQuote: (quote: RFQShippingQuote) => void;
@@ -22,13 +22,13 @@ interface ShippingSelectorProps {
 
 export function ShippingSelector({
   weight,
-  destinationCountry,
+  destinationCountries,
   warehouseId,
   selectedQuoteId,
   onSelectQuote,
   readOnly = false,
 }: ShippingSelectorProps) {
-  const [quotes, setQuotes] = useState<any[]>([]);
+  const [quotesByCountry, setQuotesByCountry] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -41,25 +41,16 @@ export function ShippingSelector({
   const validationError = useMemo(() => {
     if (!weight || weight <= 0) return 'Weight must be greater than 0';
     if (weight > 1000000) return 'Weight exceeds maximum limit (1000000g)';
-    if (!destinationCountry) return 'Destination country is required';
+    if (!destinationCountries || destinationCountries.length === 0) return 'Destination country is required';
     if (!warehouseId) return 'Warehouse selection is required';
     return null;
-  }, [weight, destinationCountry, warehouseId]);
+  }, [weight, destinationCountries, warehouseId]);
 
-  // Debounced calculation with caching
+  // Debounced calculation with caching for multiple countries
   const calculateShipping = useCallback(async () => {
     if (validationError) {
-      setQuotes([]);
+      setQuotesByCountry({});
       setError(validationError);
-      return;
-    }
-
-    // Check cache
-    const cacheKey = `${weight}-${warehouseId}-${destinationCountry}`;
-    const cached = cacheRef.current.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      setQuotes(cached.data);
-      setError(null);
       return;
     }
 
@@ -73,43 +64,57 @@ export function ShippingSelector({
     setError(null);
 
     try {
-      const results = await shippingService.calculateMultipleQuotes(
-        weight,
-        warehouseId,
-        destinationCountry
-      );
+      const allQuotesByCountry: Record<string, any[]> = {};
       
-      if (results.length === 0) {
-        setError(`No shipping options available for ${destinationCountry} at ${weight}g`);
-        setQuotes([]);
-        return;
+      // Calculate quotes for each country
+      for (const country of destinationCountries) {
+        // Check cache
+        const cacheKey = `${weight}-${warehouseId}-${country}`;
+        const cached = cacheRef.current.get(cacheKey);
+        
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+          allQuotesByCountry[country] = cached.data;
+          continue;
+        }
+
+        const results = await shippingService.calculateMultipleQuotes(
+          weight,
+          warehouseId,
+          country
+        );
+        
+        // Convert results to quote format
+        const quoteData = results.map((r, idx) => ({
+          id: `quote-${country}-${idx}`,
+          country: country,
+          channel_id: r.channel_id,
+          carrier_name: r.carrier_name,
+          channel_name: r.channel_name,
+          base_freight: r.base_freight,
+          fuel_surcharge: r.fuel_surcharge,
+          remote_surcharge: r.remote_surcharge,
+          total_freight: r.total_freight,
+          currency: r.currency,
+          estimated_delivery_days_min: r.estimated_delivery_days_min,
+          estimated_delivery_days_max: r.estimated_delivery_days_max,
+          breakdown: r.breakdown,
+        }));
+
+        allQuotesByCountry[country] = quoteData;
+        cacheRef.current.set(cacheKey, { data: quoteData, timestamp: Date.now() });
       }
 
-      // Convert results to quote format
-      const quoteData = results.map((r, idx) => ({
-        id: `quote-${idx}`,
-        channel_id: r.channel_id,
-        carrier_name: r.carrier_name,
-        channel_name: r.channel_name,
-        base_freight: r.base_freight,
-        fuel_surcharge: r.fuel_surcharge,
-        remote_surcharge: r.remote_surcharge,
-        total_freight: r.total_freight,
-        currency: r.currency,
-        estimated_delivery_days_min: r.estimated_delivery_days_min,
-        estimated_delivery_days_max: r.estimated_delivery_days_max,
-        breakdown: r.breakdown,
-      }));
+      setQuotesByCountry(allQuotesByCountry);
 
-      setQuotes(quoteData);
-      cacheRef.current.set(cacheKey, { data: quoteData, timestamp: Date.now() });
-
-      // Auto-select cheapest if no selection
-      if (quoteData.length > 0 && !selectedQuoteId) {
-        const cheapest = quoteData.reduce((min, q) => 
-          q.total_freight < min.total_freight ? q : min
-        );
-        onSelectQuote(cheapest as any);
+      // Auto-select cheapest overall if no selection
+      if (!selectedQuoteId) {
+        const allQuotes = Object.values(allQuotesByCountry).flat();
+        if (allQuotes.length > 0) {
+          const cheapest = allQuotes.reduce((min, q) => 
+            q.total_freight < min.total_freight ? q : min
+          );
+          onSelectQuote(cheapest as any);
+        }
       }
       
       setRetryCount(0);
@@ -120,7 +125,7 @@ export function ShippingSelector({
       console.error('Shipping calculation error:', error);
       
       setError(errorMessage);
-      setQuotes([]);
+      setQuotesByCountry({});
       
       toast({
         title: 'Calculation Failed',
@@ -130,7 +135,7 @@ export function ShippingSelector({
     } finally {
       setLoading(false);
     }
-  }, [weight, destinationCountry, warehouseId, selectedQuoteId, validationError, onSelectQuote]);
+  }, [weight, destinationCountries, warehouseId, selectedQuoteId, validationError, onSelectQuote]);
 
   // Debounce effect
   useEffect(() => {
@@ -166,7 +171,7 @@ export function ShippingSelector({
           <div className="text-center space-y-2">
             <p className="font-medium">Calculating shipping options...</p>
             <p className="text-sm text-muted-foreground">
-              Comparing {weight}g to {destinationCountry}
+              Comparing {weight}g to {destinationCountries.join(', ')}
             </p>
           </div>
         </CardContent>
@@ -195,7 +200,9 @@ export function ShippingSelector({
     );
   }
 
-  if (quotes.length === 0 && !validationError) {
+  const allQuotes = Object.values(quotesByCountry).flat();
+  
+  if (allQuotes.length === 0 && !validationError) {
     return (
       <Card>
         <CardContent className="py-8 text-center space-y-4">
@@ -211,32 +218,57 @@ export function ShippingSelector({
     );
   }
 
-  // Find cheapest and fastest
-  const cheapestQuote = quotes.reduce((min, q) => 
+  // Find cheapest and fastest across all countries
+  const cheapestQuote = allQuotes.reduce((min, q) => 
     q.total_freight < min.total_freight ? q : min
-  );
-  const fastestQuote = quotes.reduce((min, q) => 
+  , allQuotes[0]);
+  const fastestQuote = allQuotes.reduce((min, q) => 
     q.estimated_delivery_days_min < min.estimated_delivery_days_min ? q : min
-  );
+  , allQuotes[0]);
+
+  // Country label mapping
+  const countryLabels: Record<string, string> = {
+    'US': '美国 US',
+    'GB': '英国 GB',
+    'AU': '澳大利亚 AU',
+    'CA': '加拿大 CA',
+    'DE': '德国 DE',
+    'FR': '法国 FR',
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>运费选择 Shipping Options</CardTitle>
       </CardHeader>
-      <CardContent>
-        <RadioGroup
-          value={selectedQuoteId}
-          onValueChange={(value) => {
-            const selected = quotes.find(q => q.id === value);
-            if (selected) {
-              onSelectQuote(selected as any);
-            }
-          }}
-          disabled={readOnly}
-          className="space-y-4"
-        >
-          {quotes.map((quote) => (
+      <CardContent className="space-y-6">
+        {destinationCountries.map((country) => {
+          const quotes = quotesByCountry[country] || [];
+          if (quotes.length === 0) return null;
+
+          return (
+            <div key={country} className="space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <Badge variant="secondary" className="text-sm">
+                  {countryLabels[country] || country}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  {quotes.length} shipping options
+                </span>
+              </div>
+              
+              <RadioGroup
+                value={selectedQuoteId}
+                onValueChange={(value) => {
+                  const selected = allQuotes.find(q => q.id === value);
+                  if (selected) {
+                    onSelectQuote(selected as any);
+                  }
+                }}
+                disabled={readOnly}
+                className="space-y-3"
+              >
+                {quotes.map((quote) => (
             <Card
               key={quote.id}
               className={`cursor-pointer transition-all ${
@@ -321,7 +353,10 @@ export function ShippingSelector({
               </CardContent>
             </Card>
           ))}
-        </RadioGroup>
+              </RadioGroup>
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
