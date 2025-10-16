@@ -68,7 +68,7 @@ export default function ShippingEstimator() {
     setCalculated(false);
     try {
       const quotes = await shippingService.calculateMultipleQuotes(
-        weightNum,
+        weightNum / 1000,
         warehouseId,
         destination
       );

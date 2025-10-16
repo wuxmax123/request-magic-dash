@@ -40,7 +40,7 @@ export function ShippingSelector({
   // Validate inputs
   const validationError = useMemo(() => {
     if (!weight || weight <= 0) return 'Weight must be greater than 0';
-    if (weight > 1000) return 'Weight exceeds maximum limit (1000kg)';
+    if (weight > 1000000) return 'Weight exceeds maximum limit (1000000g)';
     if (!destinationCountry) return 'Destination country is required';
     if (!warehouseId) return 'Warehouse selection is required';
     return null;

@@ -968,7 +968,7 @@ export default function RFQ() {
                           </Button>
                         </div>
                         <ShippingSelector
-                          weight={rfqData.target_weight_kg}
+                          weight={rfqData.target_weight_kg / 1000}
                           destinationCountry={rfqData.target_countries[0]}
                           warehouseId={selectedWarehouseId}
                           selectedQuoteId={selectedShippingQuote?.id}
