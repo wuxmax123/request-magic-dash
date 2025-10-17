@@ -1,4 +1,4 @@
-import { SupplierQuote, CommercialTerm, AttributeDefinition } from '@/types/rfq';
+import { SupplierQuote, CommercialTerm, AttributeDefinition, FeatureModuleAttribute } from '@/types/rfq';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface QuotesViewDialogProps {
   commercialTerms: CommercialTerm[];
   rfqAttributes?: Record<string, any>;
   categoryAttributes?: AttributeDefinition[];
+  featureAttrsMap?: Record<string, FeatureModuleAttribute[]>;
 }
 
 export function QuotesViewDialog({ 
@@ -24,7 +25,8 @@ export function QuotesViewDialog({
   quotes, 
   commercialTerms,
   rfqAttributes = {},
-  categoryAttributes = []
+  categoryAttributes = [],
+  featureAttrsMap = {}
 }: QuotesViewDialogProps) {
   if (quotes.length === 0) {
     return (
@@ -81,6 +83,7 @@ export function QuotesViewDialog({
                             <table className="w-full text-sm">
                               <thead className="bg-muted">
                                 <tr>
+                                  <th className="text-left p-2 font-medium">属性类型</th>
                                   <th className="text-left p-2 font-medium">属性</th>
                                   <th className="text-left p-2 font-medium">客户要求</th>
                                   <th className="text-left p-2 font-medium">供应商实际</th>
@@ -88,12 +91,29 @@ export function QuotesViewDialog({
                               </thead>
                               <tbody>
                                 {Object.entries(quote.supplier_diff_json).map(([attrCode, supplierValue]) => {
-                                  const attr = categoryAttributes.find(a => a.attr_code === attrCode);
+                                  // Try to find in category attributes first
+                                  let attr = categoryAttributes.find(a => a.attr_code === attrCode);
+                                  let attrType = '基本属性';
+                                  let attrName = attr?.attr_name || attrCode;
+                                  
+                                  // If not found, search in feature attributes
+                                  if (!attr) {
+                                    for (const [featureCode, attrs] of Object.entries(featureAttrsMap)) {
+                                      const featureAttr = attrs.find(a => a.attr_code === attrCode);
+                                      if (featureAttr) {
+                                        attrType = featureAttr.feature_name;
+                                        attrName = featureAttr.attr_name;
+                                        break;
+                                      }
+                                    }
+                                  }
+                                  
                                   const customerValue = rfqAttributes[attrCode];
 
                                   return (
                                     <tr key={attrCode} className="border-t">
-                                      <td className="p-2 font-medium">{attr?.attr_name || attrCode}</td>
+                                      <td className="p-2 text-muted-foreground">{attrType}</td>
+                                      <td className="p-2 font-medium">{attrName}</td>
                                       <td className="p-2 text-muted-foreground">{customerValue || '-'}</td>
                                       <td className="p-2 text-destructive font-medium">{supplierValue as string}</td>
                                     </tr>

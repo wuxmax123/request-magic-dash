@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { SupplierQuote, CommercialTerm, AttributeDefinition } from '@/types/rfq';
+import { SupplierQuote, CommercialTerm, AttributeDefinition, FeatureModuleAttribute } from '@/types/rfq';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ interface QuoteDrawerProps {
   rfqFeatureAttributes?: Record<string, Record<string, any>>; // Customer's feature spec
   categoryAttributes?: AttributeDefinition[];
   featureModules?: string[];
+  featureAttrsMap?: Record<string, FeatureModuleAttribute[]>; // Feature attribute definitions
 }
 
 export function QuoteDrawer({ 
@@ -31,7 +32,8 @@ export function QuoteDrawer({
   rfqAttributes = {},
   rfqFeatureAttributes = {},
   categoryAttributes = [],
-  featureModules = []
+  featureModules = [],
+  featureAttrsMap = {}
 }: QuoteDrawerProps) {
   const [showDifferenceEditor, setShowDifferenceEditor] = useState(false);
   
@@ -82,10 +84,20 @@ export function QuoteDrawer({
 
   // Get attribute definitions for rendering
   const allAttributeDefinitions = useMemo(() => {
-    const defs: AttributeDefinition[] = [...categoryAttributes];
-    // Add feature attribute definitions if available
+    const defs: Array<AttributeDefinition & { feature_name?: string }> = [...categoryAttributes];
+    
+    // Add feature attribute definitions
+    Object.entries(featureAttrsMap).forEach(([featureCode, attrs]) => {
+      attrs.forEach(attr => {
+        defs.push({
+          ...attr,
+          feature_name: attr.feature_name
+        });
+      });
+    });
+    
     return defs;
-  }, [categoryAttributes]);
+  }, [categoryAttributes, featureAttrsMap]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -191,19 +203,22 @@ export function QuoteDrawer({
                     <table className="w-full text-sm">
                       <thead className="bg-muted">
                         <tr>
+                          <th className="text-left p-2 font-medium">属性类型</th>
                           <th className="text-left p-2 font-medium">属性</th>
                           <th className="text-left p-2 font-medium">客户要求</th>
                           <th className="text-left p-2 font-medium">供应商实际</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {allAttributeDefinitions.map((attr) => {
+                        {/* Basic Attributes */}
+                        {categoryAttributes.map((attr) => {
                           const customerValue = allRfqAttributes[attr.attr_code];
                           const supplierValue = formData.supplier_attributes?.[attr.attr_code] ?? customerValue;
                           const isDifferent = supplierValue !== customerValue;
 
                           return (
                             <tr key={attr.attr_code} className={isDifferent ? 'bg-yellow-50' : ''}>
+                              <td className="p-2 border-t text-muted-foreground">基本属性</td>
                               <td className="p-2 border-t font-medium">{attr.attr_name}</td>
                               <td className="p-2 border-t text-muted-foreground">
                                 {customerValue || '-'}
@@ -219,6 +234,35 @@ export function QuoteDrawer({
                             </tr>
                           );
                         })}
+                        
+                        {/* Feature Attributes */}
+                        {Object.entries(featureAttrsMap).map(([featureCode, attrs]) => (
+                          attrs.map((attr, idx) => {
+                            const customerValue = allRfqAttributes[attr.attr_code];
+                            const supplierValue = formData.supplier_attributes?.[attr.attr_code] ?? customerValue;
+                            const isDifferent = supplierValue !== customerValue;
+
+                            return (
+                              <tr key={`${featureCode}-${attr.attr_code}`} className={isDifferent ? 'bg-yellow-50' : ''}>
+                                <td className="p-2 border-t text-muted-foreground">
+                                  {idx === 0 ? attr.feature_name : ''}
+                                </td>
+                                <td className="p-2 border-t font-medium">{attr.attr_name}</td>
+                                <td className="p-2 border-t text-muted-foreground">
+                                  {customerValue || '-'}
+                                </td>
+                                <td className="p-2 border-t">
+                                  <Input
+                                    value={supplierValue || ''}
+                                    onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                    placeholder="如有差异，请填写"
+                                    className="h-8"
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ))}
                       </tbody>
                     </table>
                   </div>

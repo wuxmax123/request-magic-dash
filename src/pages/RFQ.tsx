@@ -1025,6 +1025,7 @@ export default function RFQ() {
             rfqFeatureAttributes={rfqData.feature_attributes}
             categoryAttributes={categoryAttributes}
             featureModules={rfqData.feature_modules}
+            featureAttrsMap={featureAttrsMap}
           />
           <QuotesViewDialog
             open={quotesViewOpen}
@@ -1034,6 +1035,7 @@ export default function RFQ() {
             commercialTerms={commercialTerms}
             rfqAttributes={rfqData.attributes}
             categoryAttributes={categoryAttributes}
+            featureAttrsMap={featureAttrsMap}
           />
         </>
       )}
