@@ -1,9 +1,11 @@
-import { SupplierQuote, CommercialTerm } from '@/types/rfq';
+import { SupplierQuote, CommercialTerm, AttributeDefinition } from '@/types/rfq';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface QuotesViewDialogProps {
   open: boolean;
@@ -11,9 +13,19 @@ interface QuotesViewDialogProps {
   supplierName: string;
   quotes: SupplierQuote[];
   commercialTerms: CommercialTerm[];
+  rfqAttributes?: Record<string, any>;
+  categoryAttributes?: AttributeDefinition[];
 }
 
-export function QuotesViewDialog({ open, onOpenChange, supplierName, quotes, commercialTerms }: QuotesViewDialogProps) {
+export function QuotesViewDialog({ 
+  open, 
+  onOpenChange, 
+  supplierName, 
+  quotes, 
+  commercialTerms,
+  rfqAttributes = {},
+  categoryAttributes = []
+}: QuotesViewDialogProps) {
   if (quotes.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,18 +48,67 @@ export function QuotesViewDialog({ open, onOpenChange, supplierName, quotes, com
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
-          {quotes.map((quote, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>报价 #{index + 1}</span>
-                  <Badge variant={quote.tax_included ? 'default' : 'outline'}>
-                    {quote.tax_included ? '含税' : '不含税'}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Pricing Info */}
+          {quotes.map((quote, index) => {
+            const hasDifferences = quote.supplier_diff_json && Object.keys(quote.supplier_diff_json).length > 0;
+
+            return (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span>报价 #{index + 1}</span>
+                    <div className="flex gap-2">
+                      {hasDifferences && (
+                        <Badge variant="destructive" className="gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          有规格差异
+                        </Badge>
+                      )}
+                      <Badge variant={quote.tax_included ? 'default' : 'outline'}>
+                        {quote.tax_included ? '含税' : '不含税'}
+                      </Badge>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Product Attribute Differences */}
+                  {hasDifferences && (
+                    <>
+                      <Alert className="border-yellow-500 bg-yellow-50">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        <AlertDescription>
+                          <p className="font-medium text-yellow-900 mb-2">⚠️ 供应商产品规格与客户要求不同</p>
+                          <div className="mt-3 border rounded-lg overflow-hidden bg-white">
+                            <table className="w-full text-sm">
+                              <thead className="bg-muted">
+                                <tr>
+                                  <th className="text-left p-2 font-medium">属性</th>
+                                  <th className="text-left p-2 font-medium">客户要求</th>
+                                  <th className="text-left p-2 font-medium">供应商实际</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Object.entries(quote.supplier_diff_json).map(([attrCode, supplierValue]) => {
+                                  const attr = categoryAttributes.find(a => a.attr_code === attrCode);
+                                  const customerValue = rfqAttributes[attrCode];
+
+                                  return (
+                                    <tr key={attrCode} className="border-t">
+                                      <td className="p-2 font-medium">{attr?.attr_name || attrCode}</td>
+                                      <td className="p-2 text-muted-foreground">{customerValue || '-'}</td>
+                                      <td className="p-2 text-destructive font-medium">{supplierValue as string}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                      <Separator />
+                    </>
+                  )}
+
+                  {/* Pricing Info */}
                 <div>
                   <h4 className="font-medium mb-3">价格信息</h4>
                   <div className="grid grid-cols-4 gap-4">
@@ -166,7 +227,8 @@ export function QuotesViewDialog({ open, onOpenChange, supplierName, quotes, com
                 )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>

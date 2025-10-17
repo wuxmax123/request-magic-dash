@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { SupplierQuote, CommercialTerm } from '@/types/rfq';
+import { useState, useEffect, useMemo } from 'react';
+import { SupplierQuote, CommercialTerm, AttributeDefinition } from '@/types/rfq';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,26 @@ interface QuoteDrawerProps {
   onSave: (quote: SupplierQuote) => void;
   initialData?: SupplierQuote;
   commercialTerms: CommercialTerm[];
+  rfqAttributes?: Record<string, any>; // Customer's product spec
+  rfqFeatureAttributes?: Record<string, Record<string, any>>; // Customer's feature spec
+  categoryAttributes?: AttributeDefinition[];
+  featureModules?: string[];
 }
 
-export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialData, commercialTerms }: QuoteDrawerProps) {
+export function QuoteDrawer({ 
+  open, 
+  onOpenChange, 
+  supplierName, 
+  onSave, 
+  initialData, 
+  commercialTerms,
+  rfqAttributes = {},
+  rfqFeatureAttributes = {},
+  categoryAttributes = [],
+  featureModules = []
+}: QuoteDrawerProps) {
+  const [showDifferenceEditor, setShowDifferenceEditor] = useState(false);
+  
   const [formData, setFormData] = useState<SupplierQuote>(
     initialData || {
       currency: 'USD',
@@ -37,10 +54,38 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
       remarks: '',
       attachments: [],
       commercial_terms: {},
+      supplier_attributes: {},
+      supplier_diff_json: {},
     }
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Auto-inherit RFQ attributes on initial load
+  useEffect(() => {
+    if (!initialData && Object.keys(rfqAttributes).length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        supplier_attributes: { ...rfqAttributes, ...rfqFeatureAttributes }
+      }));
+    }
+  }, [rfqAttributes, rfqFeatureAttributes, initialData]);
+
+  // Merge all attributes for display
+  const allRfqAttributes = useMemo(() => {
+    const merged: Record<string, any> = { ...rfqAttributes };
+    Object.entries(rfqFeatureAttributes).forEach(([, attrs]) => {
+      Object.assign(merged, attrs);
+    });
+    return merged;
+  }, [rfqAttributes, rfqFeatureAttributes]);
+
+  // Get attribute definitions for rendering
+  const allAttributeDefinitions = useMemo(() => {
+    const defs: AttributeDefinition[] = [...categoryAttributes];
+    // Add feature attribute definitions if available
+    return defs;
+  }, [categoryAttributes]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -59,7 +104,22 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
 
   const handleSave = () => {
     if (validate()) {
-      onSave(formData);
+      // Calculate differences only
+      const diff: Record<string, any> = {};
+      const supplierAttrs = formData.supplier_attributes || {};
+      
+      Object.keys(supplierAttrs).forEach(key => {
+        if (supplierAttrs[key] !== allRfqAttributes[key]) {
+          diff[key] = supplierAttrs[key];
+        }
+      });
+
+      const finalData = {
+        ...formData,
+        supplier_diff_json: diff
+      };
+
+      onSave(finalData);
       toast({
         title: '报价保存成功',
         description: `供应商 ${supplierName} 的报价已保存`,
@@ -81,15 +141,96 @@ export function QuoteDrawer({ open, onOpenChange, supplierName, onSave, initialD
     }
   };
 
+  const updateSupplierAttribute = (attrCode: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      supplier_attributes: {
+        ...prev.supplier_attributes,
+        [attrCode]: value
+      }
+    }));
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
+      <SheetContent className="w-[700px] sm:max-w-[700px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>添加报价 - {supplierName}</SheetTitle>
           <SheetDescription>填写供应商报价信息</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 py-6">
+          {/* Product Attributes Section */}
+          {Object.keys(allRfqAttributes).length > 0 && (
+            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">产品规格 (自动继承)</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDifferenceEditor(!showDifferenceEditor)}
+                >
+                  {showDifferenceEditor ? '收起差异编辑' : '🧠 修改差异'}
+                </Button>
+              </div>
+
+              {!showDifferenceEditor && (
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p>✅ 已自动继承客户要求的产品规格</p>
+                  <p className="text-xs">如供应商实际产品与客户要求有差异，请点击"修改差异"按钮</p>
+                </div>
+              )}
+
+              {showDifferenceEditor && (
+                <div className="space-y-3">
+                  <div className="text-sm text-muted-foreground mb-3">
+                    <p>⚠️ 仅修改与客户要求不同的属性，相同的属性无需填写</p>
+                  </div>
+                  
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="text-left p-2 font-medium">属性</th>
+                          <th className="text-left p-2 font-medium">客户要求</th>
+                          <th className="text-left p-2 font-medium">供应商实际</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allAttributeDefinitions.map((attr) => {
+                          const customerValue = allRfqAttributes[attr.attr_code];
+                          const supplierValue = formData.supplier_attributes?.[attr.attr_code] ?? customerValue;
+                          const isDifferent = supplierValue !== customerValue;
+
+                          return (
+                            <tr key={attr.attr_code} className={isDifferent ? 'bg-yellow-50' : ''}>
+                              <td className="p-2 border-t font-medium">{attr.attr_name}</td>
+                              <td className="p-2 border-t text-muted-foreground">
+                                {customerValue || '-'}
+                              </td>
+                              <td className="p-2 border-t">
+                                <Input
+                                  value={supplierValue || ''}
+                                  onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                  placeholder="如有差异，请填写"
+                                  className="h-8"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    💡 黄色高亮表示该属性与客户要求不同
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Pricing Section */}
           <div className="space-y-4">
             <h3 className="font-medium">价格信息</h3>

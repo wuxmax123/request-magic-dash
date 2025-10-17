@@ -67,6 +67,8 @@ export interface SupplierQuote {
   remarks: string;
   attachments: string[];
   commercial_terms: Record<string, any>;
+  supplier_attributes?: Record<string, any>; // Auto-inherited from RFQ attributes
+  supplier_diff_json?: Record<string, any>; // Only stores differences from customer spec
 }
 
 export interface Supplier {

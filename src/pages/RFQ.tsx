@@ -1021,6 +1021,10 @@ export default function RFQ() {
             supplierName={selectedSupplier.name}
             onSave={handleSaveQuote}
             commercialTerms={commercialTerms}
+            rfqAttributes={rfqData.attributes}
+            rfqFeatureAttributes={rfqData.feature_attributes}
+            categoryAttributes={categoryAttributes}
+            featureModules={rfqData.feature_modules}
           />
           <QuotesViewDialog
             open={quotesViewOpen}
@@ -1028,6 +1032,8 @@ export default function RFQ() {
             supplierName={selectedSupplier.name}
             quotes={selectedSupplier.quotes}
             commercialTerms={commercialTerms}
+            rfqAttributes={rfqData.attributes}
+            categoryAttributes={categoryAttributes}
           />
         </>
       )}
