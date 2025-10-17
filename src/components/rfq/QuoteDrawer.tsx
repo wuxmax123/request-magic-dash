@@ -226,20 +226,45 @@ export function QuoteDrawer({
                               </td>
                               <td className="p-2 border-t">
                                 {hasOptions ? (
-                                  <div className="relative">
-                                    <Input
-                                      value={supplierValue || ''}
-                                      onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
-                                      placeholder="选择或输入自定义值"
-                                      className="h-8"
-                                      list={`options-${attr.attr_code}`}
-                                    />
-                                    <datalist id={`options-${attr.attr_code}`}>
-                                      {attr.options_json.map((option, idx) => (
-                                        <option key={idx} value={option} />
-                                      ))}
-                                    </datalist>
-                                  </div>
+                                  (() => {
+                                    const options = Array.isArray(attr.options_json) ? attr.options_json : [];
+                                    const inOptions = options.includes(String(supplierValue ?? ''));
+                                    const selectVal = inOptions ? String(supplierValue ?? '') : '__CUSTOM__';
+                                    return (
+                                      <div className="flex items-center gap-2">
+                                        <Select
+                                          value={selectVal}
+                                          onValueChange={(val) => {
+                                            if (val === '__CUSTOM__') {
+                                              updateSupplierAttribute(attr.attr_code, String(supplierValue || ''));
+                                            } else {
+                                              updateSupplierAttribute(attr.attr_code, val);
+                                            }
+                                          }}
+                                        >
+                                          <SelectTrigger className="h-8 w-[180px]">
+                                            <SelectValue placeholder="选择或输入自定义值" />
+                                          </SelectTrigger>
+                                          <SelectContent className="z-50">
+                                            {options.map((option) => (
+                                              <SelectItem key={option} value={String(option)}>
+                                                {String(option)}
+                                              </SelectItem>
+                                            ))}
+                                            <SelectItem value="__CUSTOM__">其他...</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        {selectVal === '__CUSTOM__' && (
+                                          <Input
+                                            value={String(supplierValue || '')}
+                                            onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                            placeholder="输入自定义值"
+                                            className="h-8 w-[180px]"
+                                          />
+                                        )}
+                                      </div>
+                                    );
+                                  })()
                                 ) : (
                                   <Input
                                     value={supplierValue || ''}
@@ -272,20 +297,45 @@ export function QuoteDrawer({
                                 </td>
                                 <td className="p-2 border-t">
                                   {hasOptions ? (
-                                    <div className="relative">
-                                      <Input
-                                        value={supplierValue || ''}
-                                        onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
-                                        placeholder="选择或输入自定义值"
-                                        className="h-8"
-                                        list={`options-${attr.attr_code}`}
-                                      />
-                                      <datalist id={`options-${attr.attr_code}`}>
-                                        {attr.options_json.map((option, idx) => (
-                                          <option key={idx} value={option} />
-                                        ))}
-                                      </datalist>
-                                    </div>
+                                    (() => {
+                                      const options = Array.isArray(attr.options_json) ? attr.options_json : [];
+                                      const inOptions = options.includes(String(supplierValue ?? ''));
+                                      const selectVal = inOptions ? String(supplierValue ?? '') : '__CUSTOM__';
+                                      return (
+                                        <div className="flex items-center gap-2">
+                                          <Select
+                                            value={selectVal}
+                                            onValueChange={(val) => {
+                                              if (val === '__CUSTOM__') {
+                                                updateSupplierAttribute(attr.attr_code, String(supplierValue || ''));
+                                              } else {
+                                                updateSupplierAttribute(attr.attr_code, val);
+                                              }
+                                            }}
+                                          >
+                                            <SelectTrigger className="h-8 w-[180px]">
+                                              <SelectValue placeholder="选择或输入自定义值" />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-50">
+                                              {options.map((option) => (
+                                                <SelectItem key={option} value={String(option)}>
+                                                  {String(option)}
+                                                </SelectItem>
+                                              ))}
+                                              <SelectItem value="__CUSTOM__">其他...</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                          {selectVal === '__CUSTOM__' && (
+                                            <Input
+                                              value={String(supplierValue || '')}
+                                              onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                              placeholder="输入自定义值"
+                                              className="h-8 w-[180px]"
+                                            />
+                                          )}
+                                        </div>
+                                      );
+                                    })()
                                   ) : (
                                     <Input
                                       value={supplierValue || ''}
