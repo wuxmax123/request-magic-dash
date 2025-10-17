@@ -35,7 +35,7 @@ export function QuoteDrawer({
   featureModules = [],
   featureAttrsMap = {}
 }: QuoteDrawerProps) {
-  const [showDifferenceEditor, setShowDifferenceEditor] = useState(false);
+  const [showDifferenceEditor, setShowDifferenceEditor] = useState(true);
   
   const [formData, setFormData] = useState<SupplierQuote>(
     initialData || {
@@ -215,6 +215,7 @@ export function QuoteDrawer({
                           const customerValue = allRfqAttributes[attr.attr_code];
                           const supplierValue = formData.supplier_attributes?.[attr.attr_code] ?? customerValue;
                           const isDifferent = supplierValue !== customerValue;
+                          const hasOptions = attr.input_type === 'select' && attr.options_json && attr.options_json.length > 0;
 
                           return (
                             <tr key={attr.attr_code} className={isDifferent ? 'bg-yellow-50' : ''}>
@@ -224,12 +225,29 @@ export function QuoteDrawer({
                                 {customerValue || '-'}
                               </td>
                               <td className="p-2 border-t">
-                                <Input
-                                  value={supplierValue || ''}
-                                  onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
-                                  placeholder="如有差异，请填写"
-                                  className="h-8"
-                                />
+                                {hasOptions ? (
+                                  <div className="relative">
+                                    <Input
+                                      value={supplierValue || ''}
+                                      onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                      placeholder="选择或输入自定义值"
+                                      className="h-8"
+                                      list={`options-${attr.attr_code}`}
+                                    />
+                                    <datalist id={`options-${attr.attr_code}`}>
+                                      {attr.options_json.map((option, idx) => (
+                                        <option key={idx} value={option} />
+                                      ))}
+                                    </datalist>
+                                  </div>
+                                ) : (
+                                  <Input
+                                    value={supplierValue || ''}
+                                    onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                    placeholder="如有差异，请填写"
+                                    className="h-8"
+                                  />
+                                )}
                               </td>
                             </tr>
                           );
@@ -241,6 +259,7 @@ export function QuoteDrawer({
                             const customerValue = allRfqAttributes[attr.attr_code];
                             const supplierValue = formData.supplier_attributes?.[attr.attr_code] ?? customerValue;
                             const isDifferent = supplierValue !== customerValue;
+                            const hasOptions = attr.input_type === 'select' && attr.options_json && attr.options_json.length > 0;
 
                             return (
                               <tr key={`${featureCode}-${attr.attr_code}`} className={isDifferent ? 'bg-yellow-50' : ''}>
@@ -252,12 +271,29 @@ export function QuoteDrawer({
                                   {customerValue || '-'}
                                 </td>
                                 <td className="p-2 border-t">
-                                  <Input
-                                    value={supplierValue || ''}
-                                    onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
-                                    placeholder="如有差异，请填写"
-                                    className="h-8"
-                                  />
+                                  {hasOptions ? (
+                                    <div className="relative">
+                                      <Input
+                                        value={supplierValue || ''}
+                                        onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                        placeholder="选择或输入自定义值"
+                                        className="h-8"
+                                        list={`options-${attr.attr_code}`}
+                                      />
+                                      <datalist id={`options-${attr.attr_code}`}>
+                                        {attr.options_json.map((option, idx) => (
+                                          <option key={idx} value={option} />
+                                        ))}
+                                      </datalist>
+                                    </div>
+                                  ) : (
+                                    <Input
+                                      value={supplierValue || ''}
+                                      onChange={(e) => updateSupplierAttribute(attr.attr_code, e.target.value)}
+                                      placeholder="如有差异，请填写"
+                                      className="h-8"
+                                    />
+                                  )}
                                 </td>
                               </tr>
                             );
