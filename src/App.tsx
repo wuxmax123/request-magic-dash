@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthWrapper } from "./components/auth/AuthWrapper";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/AppSidebar";
 import Index from "./pages/Index";
 import RFQ from "./pages/RFQ";
 import RFQList from "./pages/RFQList";
@@ -21,16 +23,28 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthWrapper>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/rfq" element={<RFQ />} />
-            <Route path="/rfq-list" element={<RFQList />} />
-            <Route path="/quotation-requests" element={<QuotationRequestList />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/shipping-estimator" element={<ShippingEstimator />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full">
+              <AppSidebar />
+              <main className="flex-1 flex flex-col">
+                <header className="h-12 flex items-center border-b bg-card/50 backdrop-blur px-4">
+                  <SidebarTrigger />
+                </header>
+                <div className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/rfq" element={<RFQ />} />
+                    <Route path="/rfq-list" element={<RFQList />} />
+                    <Route path="/quotation-requests" element={<QuotationRequestList />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/shipping-estimator" element={<ShippingEstimator />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+              </main>
+            </div>
+          </SidebarProvider>
         </AuthWrapper>
       </BrowserRouter>
     </TooltipProvider>

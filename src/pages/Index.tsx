@@ -8,21 +8,6 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
-      <header className="border-b bg-card/50 backdrop-blur">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">RFQ询价系统</h1>
-              <p className="text-muted-foreground mt-1">Request for Quotation Management System</p>
-            </div>
-            <Button variant="outline" onClick={() => navigate('/admin')}>
-              <Settings className="h-4 w-4 mr-2" />
-              管理后台
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <section className="mb-12">
