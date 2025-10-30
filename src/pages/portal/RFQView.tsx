@@ -7,7 +7,8 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 import { rfqService } from '@/services/rfqService';
 import { RFQData } from '@/types/rfq';
-import { ArrowLeft, Package, DollarSign, Hash, Calendar, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Package, DollarSign, Hash, Calendar } from 'lucide-react';
+import { RFQCommunication } from '@/components/rfq/RFQCommunication';
 
 export default function RFQView() {
   const { id } = useParams<{ id: string }>();
@@ -236,22 +237,16 @@ export default function RFQView() {
             </CardContent>
           </Card>
 
-          {/* Chat Section - Placeholder */}
+          {/* Communication Section */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                沟通记录 Communication
-              </CardTitle>
+              <CardTitle>沟通记录 Communication</CardTitle>
               <CardDescription>
                 与采购员沟通 Communicate with purchaser
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>沟通功能开发中 Communication feature coming soon</p>
-              </div>
+              <RFQCommunication rfqId={id!} />
             </CardContent>
           </Card>
         </div>

@@ -276,6 +276,33 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       rate_matrix: {
         Row: {
           additional_fee_per_step: number
@@ -362,6 +389,44 @@ export type Database = {
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfq_messages: {
+        Row: {
+          attachments: string[] | null
+          created_at: string | null
+          id: string
+          message: string | null
+          rfq_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attachments?: string[] | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          rfq_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attachments?: string[] | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          rfq_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfq_messages_rfq_id_fkey"
+            columns: ["rfq_id"]
+            isOneToOne: false
+            referencedRelation: "rfqs"
             referencedColumns: ["id"]
           },
         ]
