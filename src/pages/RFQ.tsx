@@ -130,14 +130,14 @@ export default function RFQ() {
             if (tabParam) {
               setActiveTab(tabParam);
             }
-            toast({
-              title: '加载成功',
-              description: `已加载询价单 ${rfqId}`,
-            });
+          toast({
+            title: '加载成功 Loaded Successfully',
+            description: `已加载询价单 Loaded RFQ ${rfqId}`,
+          });
           } else {
             toast({
-              title: '加载失败',
-              description: '未找到该询价单',
+              title: '加载失败 Failed to Load',
+              description: '未找到该询价单 RFQ not found',
               variant: 'destructive',
             });
             navigate('/rfq-list');
@@ -145,8 +145,8 @@ export default function RFQ() {
         }
       } catch (error) {
         toast({
-          title: '数据加载失败',
-          description: '请刷新页面重试',
+          title: '数据加载失败 Failed to Load Data',
+          description: '请刷新页面重试 Please refresh and try again',
           variant: 'destructive',
         });
       } finally {
@@ -260,7 +260,7 @@ export default function RFQ() {
 
     // Basic validation
     if (!rfqData.category_l3) {
-      errors.push({ field: 'category', message: '请选择三级类目', tab: 0 });
+      errors.push({ field: 'category', message: '请选择三级类目 Please select L3 category', tab: 0 });
     }
 
     // Category attributes validation
@@ -268,8 +268,8 @@ export default function RFQ() {
       if (attr.required === 1) {
         const value = rfqData.attributes[attr.attr_code];
         if (!value || (Array.isArray(value) && value.length === 0)) {
-          newAttrErrors[attr.attr_code] = '此项必填';
-          errors.push({ field: attr.attr_code, message: `${attr.attr_name} 必填`, tab: 1 });
+          newAttrErrors[attr.attr_code] = '此项必填 Required';
+          errors.push({ field: attr.attr_code, message: `${attr.attr_name} 必填 is required`, tab: 1 });
         }
       }
     });
@@ -281,7 +281,7 @@ export default function RFQ() {
         if (attr.required === 1) {
           const value = rfqData.feature_attributes[moduleCode]?.[attr.attr_code];
           if (!value || (Array.isArray(value) && value.length === 0)) {
-            errors.push({ field: attr.attr_code, message: `${attr.attr_name} 必填`, tab: 2 });
+            errors.push({ field: attr.attr_code, message: `${attr.attr_name} 必填 is required`, tab: 2 });
           }
         }
       });
@@ -312,12 +312,12 @@ export default function RFQ() {
         setCustomerLink('');
       }
       toast({
-        title: '草稿保存成功',
+        title: '草稿保存成功 Draft Saved',
         description: `RFQ ID: ${result.id}`,
       });
     } catch (error) {
       toast({
-        title: '保存失败',
+        title: '保存失败 Save Failed',
         variant: 'destructive',
       });
     } finally {
@@ -328,8 +328,8 @@ export default function RFQ() {
   const handleSubmit = async () => {
     if (!validateRfq()) {
       toast({
-        title: '验证失败',
-        description: `发现 ${validationErrors.length} 个错误，请检查`,
+        title: '验证失败 Validation Failed',
+        description: `发现 ${validationErrors.length} 个错误，请检查 Found ${validationErrors.length} error(s), please check`,
         variant: 'destructive',
       });
       return;
@@ -353,13 +353,13 @@ export default function RFQ() {
         setCustomerLink('');
       }
       toast({
-        title: '提交成功',
+        title: '提交成功 Submitted Successfully',
         description: `RFQ ID: ${result.id}`,
       });
       setTimeout(() => navigate('/'), 1500);
     } catch (error) {
       toast({
-        title: '提交失败',
+        title: '提交失败 Submit Failed',
         variant: 'destructive',
       });
     } finally {
@@ -389,7 +389,7 @@ export default function RFQ() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">加载中...</p>
+        <p className="text-muted-foreground">加载中... Loading...</p>
       </div>
     );
   }
@@ -418,17 +418,17 @@ export default function RFQ() {
               <>
                 <Button variant="outline" onClick={handleSaveDraft} disabled={saving}>
                   <Save className="h-4 w-4 mr-2" />
-                  保存草稿
+                  保存草稿 Save Draft
                 </Button>
                 <Button onClick={handleSubmit} disabled={saving}>
                   <Send className="h-4 w-4 mr-2" />
-                  提交
+                  提交 Submit
                 </Button>
               </>
             )}
             {isViewMode && (
               <Button onClick={() => setIsViewMode(false)}>
-                编辑
+                编辑 Edit
               </Button>
             )}
           </div>
@@ -441,7 +441,7 @@ export default function RFQ() {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <p className="font-medium mb-2">发现 {validationErrors.length} 个验证错误：</p>
+              <p className="font-medium mb-2">发现 {validationErrors.length} 个验证错误 Found {validationErrors.length} validation error(s):</p>
               <ul className="list-disc list-inside text-sm space-y-1">
                 {validationErrors.slice(0, 5).map((err, i) => (
                   <li key={i}>{err.message}</li>
@@ -455,20 +455,20 @@ export default function RFQ() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="basic">1. 基本信息</TabsTrigger>
-            <TabsTrigger value="category">2. 类目属性</TabsTrigger>
-            <TabsTrigger value="features">3. 功能模块</TabsTrigger>
-            <TabsTrigger value="suppliers">4. 供应商&运费</TabsTrigger>
-            <TabsTrigger value="review">5. 预览提交</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="basic">1. 基本信息 Basic Info</TabsTrigger>
+            <TabsTrigger value="category">2. 类目属性 Category Attributes</TabsTrigger>
+            <TabsTrigger value="features">3. 功能模块 Features</TabsTrigger>
+            <TabsTrigger value="suppliers">4. 供应商&运费 Suppliers & Shipping</TabsTrigger>
+            <TabsTrigger value="review">5. 预览提交 Review & Submit</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Basic Info */}
           <TabsContent value="basic" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>基本信息</CardTitle>
-                <CardDescription>填写RFQ的基本信息和来源链接</CardDescription>
+                <CardTitle>基本信息 Basic Information</CardTitle>
+                <CardDescription>填写RFQ的基本信息和来源链接 Fill in basic information and source links</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Links */}
@@ -483,7 +483,7 @@ export default function RFQ() {
                         onKeyPress={(e) => e.key === 'Enter' && addCustomerLink()}
                         disabled={isViewMode}
                       />
-                      <Button onClick={addCustomerLink} disabled={isViewMode}>添加</Button>
+                      <Button onClick={addCustomerLink} disabled={isViewMode}>添加 Add</Button>
                     </div>
                     {rfqData.customer_links.length > 0 && (
                       <div className="mt-2 space-y-1">
@@ -491,7 +491,7 @@ export default function RFQ() {
                           <div key={i} className="flex items-center gap-2 text-sm">
                             <Badge variant="outline" className="flex-1 justify-start truncate">{link}</Badge>
                             {!isViewMode && (
-                              <Button variant="ghost" size="sm" onClick={() => removeLink('customer', i)}>删除</Button>
+                              <Button variant="ghost" size="sm" onClick={() => removeLink('customer', i)}>删除 Remove</Button>
                             )}
                           </div>
                         ))}
@@ -524,12 +524,12 @@ export default function RFQ() {
 
                 {/* Title */}
                 <div>
-                  <Label htmlFor="title">客户需求（备注）</Label>
+                  <Label htmlFor="title">客户需求（备注） Customer Requirements (Notes)</Label>
                   <Textarea
                     id="title"
                     value={rfqData.title}
                     onChange={(e) => updateRfqData({ title: e.target.value })}
-                    placeholder="描述客户需求..."
+                    placeholder="描述客户需求... Describe customer requirements..."
                     rows={3}
                   />
                 </div>
@@ -537,7 +537,7 @@ export default function RFQ() {
                 {/* Target Market */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="countries">目的国</Label>
+                    <Label htmlFor="countries">目的国 Destination Countries</Label>
                     <CountryMultiSelect
                       value={rfqData.target_countries || []}
                       onChange={(countries) => updateRfqData({ target_countries: countries })}
@@ -545,7 +545,7 @@ export default function RFQ() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="currency">货币</Label>
+                    <Label htmlFor="currency">货币 Currency</Label>
                     <Select value={rfqData.currency} onValueChange={(val) => updateRfqData({ currency: val })} disabled={isViewMode}>
                       <SelectTrigger id="currency">
                         <SelectValue />
@@ -561,23 +561,23 @@ export default function RFQ() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="target_weight">重量 (g)</Label>
+                    <Label htmlFor="target_weight">重量 (g) Weight (g)</Label>
                     <Input
                       id="target_weight"
                       type="number"
                       value={rfqData.target_weight_kg || ''}
                       onChange={(e) => updateRfqData({ target_weight_kg: e.target.value ? Number(e.target.value) : undefined })}
-                      placeholder="重量"
+                      placeholder="重量 Weight"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="target_price">价格</Label>
+                    <Label htmlFor="target_price">价格 Price</Label>
                     <Input
                       id="target_price"
                       type="number"
                       value={rfqData.target_price || ''}
                       onChange={(e) => updateRfqData({ target_price: e.target.value ? Number(e.target.value) : undefined })}
-                      placeholder="价格"
+                      placeholder="价格 Price"
                     />
                   </div>
                 </div>
@@ -605,7 +605,7 @@ export default function RFQ() {
 
                 {/* Attachments */}
                 <div>
-                  <Label>图片与附件</Label>
+                  <Label>图片与附件 Images & Attachments</Label>
                   <AttachmentUploader
                     images={rfqData.images}
                     attachments={rfqData.attachments}
@@ -633,9 +633,9 @@ export default function RFQ() {
           <TabsContent value="category">
             <Card>
               <CardHeader>
-                <CardTitle>类目属性</CardTitle>
+                <CardTitle>类目属性 Category Attributes</CardTitle>
                 <CardDescription>
-                  {getCategoryPath() || '请先在"基本信息"中选择三级类目'}
+                  {getCategoryPath() || '请先在"基本信息"中选择三级类目 Please select L3 category in Basic Info first'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -648,7 +648,7 @@ export default function RFQ() {
                   />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    <p>请先选择类目</p>
+                    <p>请先选择类目 Please select category first</p>
                   </div>
                 )}
               </CardContent>
@@ -660,8 +660,8 @@ export default function RFQ() {
             {rfqData.feature_modules.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <p>未选择功能模块</p>
-                  <p className="text-sm mt-1">请在"基本信息"中添加功能模块</p>
+                  <p>未选择功能模块 No feature modules selected</p>
+                  <p className="text-sm mt-1">请在"基本信息"中添加功能模块 Please add feature modules in Basic Info</p>
                 </CardContent>
               </Card>
             ) : (
@@ -676,7 +676,7 @@ export default function RFQ() {
                         <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                           <CardTitle className="text-lg flex items-center justify-between">
                             <span>{moduleInfo?.feature_name} {moduleInfo?.feature_name_en}</span>
-                            <Badge>{attrs.length} 个属性</Badge>
+                            <Badge>{attrs.length} 个属性 attributes</Badge>
                           </CardTitle>
                         </CardHeader>
                       </CollapsibleTrigger>
@@ -702,7 +702,7 @@ export default function RFQ() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>选择供应商</span>
+                  <span>选择供应商 Select Suppliers</span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -713,10 +713,10 @@ export default function RFQ() {
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    添加供应商
+                    添加供应商 Add Supplier
                   </Button>
                 </CardTitle>
-                <CardDescription>从可用供应商列表中选择，并为其添加报价</CardDescription>
+                <CardDescription>从可用供应商列表中选择，并为其添加报价 Select from available suppliers and add quotes</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Target Countries Display */}
@@ -789,7 +789,7 @@ export default function RFQ() {
 
                 {/* Available Suppliers Quick Add */}
                 <div className="mb-4">
-                  <Label className="text-sm text-muted-foreground">可用供应商：</Label>
+                  <Label className="text-sm text-muted-foreground">可用供应商 Available Suppliers:</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {availableSuppliers
                       .filter(s => !rfqData.suppliers.find(rs => rs.supplier_id === s.supplier_id))
@@ -996,8 +996,8 @@ export default function RFQ() {
           <TabsContent value="review">
             <Card>
               <CardHeader>
-                <CardTitle>预览与提交</CardTitle>
-                <CardDescription>检查所有信息后提交RFQ</CardDescription>
+                <CardTitle>预览与提交 Review & Submit</CardTitle>
+                <CardDescription>检查所有信息后提交RFQ Check all information before submitting RFQ</CardDescription>
               </CardHeader>
               <CardContent>
                 <ReviewPanel

@@ -148,7 +148,7 @@ export function CategoryCascader({ categories, value, onChange, required }: Cate
               ))}
               {!l1Selected && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
-                  请先选择一级类目
+                  请先选择一级类目 Please select L1 category first
                 </div>
               )}
             </div>
@@ -175,7 +175,7 @@ export function CategoryCascader({ categories, value, onChange, required }: Cate
               ))}
               {!l2Selected && (
                 <div className="p-4 text-center text-sm text-muted-foreground">
-                  请先选择二级类目
+                  请先选择二级类目 Please select L2 category first
                 </div>
               )}
             </div>
@@ -183,7 +183,7 @@ export function CategoryCascader({ categories, value, onChange, required }: Cate
         </PopoverContent>
       </Popover>
       {required && !value[2] && (
-        <p className="text-sm text-destructive">请选择三级类目</p>
+        <p className="text-sm text-destructive">请选择三级类目 Please select L3 category</p>
       )}
     </div>
   );

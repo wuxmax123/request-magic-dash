@@ -63,7 +63,7 @@ export default function QuotationRequestList() {
       setRequests(mappedRequests);
     } catch (error) {
       console.error('Failed to load requests:', error);
-      toast.error('加载报价请求失败');
+      toast.error('加载报价请求失败 Failed to load quotation requests');
     } finally {
       setLoading(false);
     }
@@ -159,23 +159,23 @@ export default function QuotationRequestList() {
 
   const handleDeleteSelected = async () => {
     if (selectedIds.size === 0) {
-      toast.error('请先选择要删除的项目');
+      toast.error('请先选择要删除的项目 Please select items to delete');
       return;
     }
 
-    if (!confirm(`确定要删除选中的 ${selectedIds.size} 个报价请求吗？此操作不可恢复。`)) {
+    if (!confirm(`确定要删除选中的 ${selectedIds.size} 个报价请求吗？此操作不可恢复。Are you sure to delete ${selectedIds.size} selected request(s)? This action cannot be undone.`)) {
       return;
     }
 
     try {
       setDeleting(true);
       await rfqService.deleteRFQs(Array.from(selectedIds));
-      toast.success(`成功删除 ${selectedIds.size} 个报价请求`);
+      toast.success(`成功删除 ${selectedIds.size} 个报价请求 Successfully deleted ${selectedIds.size} request(s)`);
       setSelectedIds(new Set());
       await loadRequests();
     } catch (error) {
       console.error('Failed to delete requests:', error);
-      toast.error('删除失败，请重试');
+      toast.error('删除失败，请重试 Delete failed, please try again');
     } finally {
       setDeleting(false);
     }
@@ -186,7 +186,7 @@ export default function QuotationRequestList() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">加载中...</p>
+          <p className="mt-4 text-muted-foreground">加载中... Loading...</p>
         </div>
       </div>
     );
@@ -226,7 +226,7 @@ export default function QuotationRequestList() {
                 onClick={handleDeleteSelected}
                 disabled={deleting}
               >
-                {deleting ? '删除中...' : `删除选中 (${selectedIds.size})`}
+                {deleting ? '删除中... Deleting...' : `删除选中 Delete (${selectedIds.size})`}
               </Button>
             )}
             <Select value={sourceFilter} onValueChange={(value) => setSourceFilter(value as RequestSource)}>
@@ -234,9 +234,9 @@ export default function QuotationRequestList() {
                 <SelectValue placeholder="请选择来源" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部来源</SelectItem>
-                <SelectItem value="system_rfq">系统询价</SelectItem>
-                <SelectItem value="customer_quote">客户请求</SelectItem>
+                <SelectItem value="all">全部来源 All Sources</SelectItem>
+                <SelectItem value="system_rfq">系统询价 System RFQ</SelectItem>
+                <SelectItem value="customer_quote">客户请求 Customer Request</SelectItem>
               </SelectContent>
             </Select>
 
@@ -255,11 +255,11 @@ export default function QuotationRequestList() {
                 <SelectValue placeholder="状态" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部状态</SelectItem>
-                <SelectItem value="draft">草稿</SelectItem>
-                <SelectItem value="submitted">已提交</SelectItem>
-                <SelectItem value="approved">已报价</SelectItem>
-                <SelectItem value="rejected">已拒绝</SelectItem>
+                <SelectItem value="all">全部状态 All Status</SelectItem>
+                <SelectItem value="draft">草稿 Draft</SelectItem>
+                <SelectItem value="submitted">已提交 Submitted</SelectItem>
+                <SelectItem value="approved">已报价 Quoted</SelectItem>
+                <SelectItem value="rejected">已拒绝 Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -295,13 +295,13 @@ export default function QuotationRequestList() {
               </TableHeader>
               <TableBody>
                 {filteredRequests.length === 0 ? (
-                <TableRow>
+                  <TableRow>
                     <TableCell colSpan={10} className="text-center py-12">
                       <div className="text-muted-foreground">
-                        <p className="mb-4">暂无报价请求</p>
+                        <p className="mb-4">暂无报价请求 No quotation requests</p>
                         <Button onClick={() => navigate('/rfq')}>
                           <Plus className="h-4 w-4 mr-2" />
-                          创建第一个询价单
+                          创建第一个询价单 Create first RFQ
                         </Button>
                       </div>
                     </TableCell>
@@ -419,7 +419,7 @@ export default function QuotationRequestList() {
                           <div className="flex gap-2">
                             {request.status === 'draft' ? (
                               <Button 
-                                variant="link" 
+                                variant="link"
                                 size="sm"
                                 onClick={() => navigate(`/rfq?id=${request.inquiry_id}`)}
                               >

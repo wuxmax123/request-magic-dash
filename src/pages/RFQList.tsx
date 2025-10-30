@@ -29,13 +29,13 @@ export default function RFQList() {
     try {
       const data = await rfqService.listRFQs();
       setRfqs(data);
-    } catch (error) {
-      toast({
-        title: '加载失败',
-        description: '无法加载询价单列表',
-        variant: 'destructive',
-      });
-    } finally {
+      } catch (error) {
+        toast({
+          title: '加载失败 Failed to Load',
+          description: '无法加载询价单列表 Unable to load RFQ list',
+          variant: 'destructive',
+        });
+      } finally {
       setLoading(false);
     }
   };
@@ -48,7 +48,7 @@ export default function RFQList() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">加载中...</p>
+        <p className="text-muted-foreground">加载中... Loading...</p>
       </div>
     );
   }
@@ -61,12 +61,12 @@ export default function RFQList() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold">我的询价单</h1>
-            <p className="text-muted-foreground">查看和管理您的询价单</p>
+            <h1 className="text-3xl font-bold">我的询价单 My RFQ List</h1>
+            <p className="text-muted-foreground">查看和管理您的询价单 View and manage your RFQ requests</p>
           </div>
           <Button onClick={() => navigate('/rfq')}>
             <Plus className="h-4 w-4 mr-2" />
-            新建询价单
+            新建询价单 New RFQ
           </Button>
         </div>
 
@@ -74,32 +74,32 @@ export default function RFQList() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-lg text-muted-foreground mb-2">暂无询价单</p>
-              <p className="text-sm text-muted-foreground mb-4">点击"新建询价单"开始创建</p>
+              <p className="text-lg text-muted-foreground mb-2">暂无询价单 No RFQs</p>
+              <p className="text-sm text-muted-foreground mb-4">点击"新建询价单"开始创建 Click "New RFQ" to start</p>
               <Button onClick={() => navigate('/rfq')}>
                 <Plus className="h-4 w-4 mr-2" />
-                新建询价单
+                新建询价单 New RFQ
               </Button>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>询价单列表</CardTitle>
-              <CardDescription>共 {rfqs.length} 条记录</CardDescription>
+              <CardTitle>询价单列表 RFQ List</CardTitle>
+              <CardDescription>共 {rfqs.length} 条记录 {rfqs.length} records</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>询价单号</TableHead>
-                    <TableHead>客户需求</TableHead>
-                    <TableHead>目标国家</TableHead>
-                    <TableHead>货币</TableHead>
-                    <TableHead>运费</TableHead>
-                    <TableHead>状态</TableHead>
-                    <TableHead>创建时间</TableHead>
-                    <TableHead className="text-right">操作</TableHead>
+                    <TableHead>询价单号 RFQ ID</TableHead>
+                    <TableHead>客户需求 Requirements</TableHead>
+                    <TableHead>目标国家 Target Country</TableHead>
+                    <TableHead>货币 Currency</TableHead>
+                    <TableHead>运费 Shipping</TableHead>
+                    <TableHead>状态 Status</TableHead>
+                    <TableHead>创建时间 Created</TableHead>
+                    <TableHead className="text-right">操作 Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -123,7 +123,7 @@ export default function RFQList() {
                           ) : (
                             <div className="flex items-center gap-1 text-muted-foreground text-sm">
                               <X className="h-3 w-3" />
-                              <span>不含运费</span>
+                              <span>不含运费 N/A</span>
                             </div>
                           )}
                         </TableCell>
@@ -139,7 +139,7 @@ export default function RFQList() {
                             size="sm"
                             onClick={() => navigate(`/rfq?id=${rfq.inquiry_id}`)}
                           >
-                            查看
+                            查看 View
                           </Button>
                         </TableCell>
                       </TableRow>

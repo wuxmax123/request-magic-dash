@@ -46,14 +46,14 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
-              + 添加功能模块
+              + 添加功能模块 Add Feature Module
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[480px] p-0 bg-background border shadow-lg z-50" align="start" sideOffset={5}>
             <div className="p-3 border-b bg-background">
-              <h4 className="font-semibold text-sm">选择功能模块 Feature Modules</h4>
+              <h4 className="font-semibold text-sm">选择功能模块 Select Feature Modules</h4>
               <p className="text-xs text-muted-foreground mt-1">
-                点击添加，已选择的模块会显示为标签
+                点击添加，已选择的模块会显示为标签 Click to add, selected modules will be shown as badges
               </p>
             </div>
             <div className="p-3 max-h-[400px] overflow-y-auto">
@@ -88,8 +88,8 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
               </div>
               {modules.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>暂无可用的功能模块</p>
-                  <p className="text-xs mt-1">请先在管理页面导入数据</p>
+                  <p>暂无可用的功能模块 No available modules</p>
+                  <p className="text-xs mt-1">请先在管理页面导入数据 Please import data in Admin page first</p>
                 </div>
               )}
             </div>
@@ -99,7 +99,7 @@ export function FeatureSelector({ modules, selected, onChange }: FeatureSelector
 
       {selected.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          点击"添加功能模块"选择产品功能（如：加热、蓝牙、防水等）
+          点击"添加功能模块"选择产品功能（如：加热、蓝牙、防水等） Click "Add Feature Module" to select product features (e.g. heating, Bluetooth, waterproof)
         </p>
       )}
     </div>

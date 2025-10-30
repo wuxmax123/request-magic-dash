@@ -121,7 +121,7 @@ export function FormRenderer({ attributes, values, onChange, errors }: FormRende
               onCheckedChange={(checked) => onChange(attr.attr_code, checked)}
             />
             <label htmlFor={fieldId} className="text-sm cursor-pointer">
-              {attr.help_text || '是/否'}
+              {attr.help_text || '是/否 Yes/No'}
             </label>
           </div>
         );
