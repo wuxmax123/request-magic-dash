@@ -383,11 +383,15 @@ export const rfqService = {
 
   async getRFQById(id: string): Promise<RFQData | null> {
     const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Check if id is a UUID or inquiry_id format
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    
     const { data, error } = await supabase
       .from('rfqs')
       .select('*, suppliers(*)')
-      .eq('inquiry_id', id)
-      .single();
+      .eq(isUUID ? 'id' : 'inquiry_id', id)
+      .maybeSingle();
 
     if (error || !data) return null;
 
