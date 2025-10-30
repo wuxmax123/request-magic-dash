@@ -174,6 +174,94 @@ export const rfqService = {
   },
 
   // RFQ APIs
+  async createPublicRFQ(data: { basic_info: any }): Promise<{ ok: boolean; id: string; rfqNo: string }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Not authenticated');
+    
+    const inquiry_id = `RFQ-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+    
+    const { data: rfq, error } = await supabase
+      .from('rfqs')
+      .insert({
+        user_id: user.id,
+        inquiry_id,
+        title: data.basic_info.productName || 'Unnamed Product',
+        product_name: data.basic_info.productName,
+        target_price: data.basic_info.targetPrice,
+        target_country: 'US',
+        currency: 'USD',
+        notes: data.basic_info.notes || '',
+        source_links: data.basic_info.productLink ? [data.basic_info.productLink] : [],
+        images: data.basic_info.referencePicUrls || [],
+        status: 'pending',
+        source: 'customer_portal',
+        created_by: user.id,
+        category_l1: null,
+        category_l2: null,
+        category_l3: null,
+        feature_modules: [],
+        attributes: {},
+        feature_attributes: {},
+        commercial_terms: {},
+        customer_links: [],
+        attachments: []
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return { ok: true, id: rfq.id, rfqNo: inquiry_id };
+  },
+
+  async assignRFQ(id: string, userId: string): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({ 
+        assigned_to: userId,
+        status: 'draft'
+      })
+      .eq('id', id);
+    
+    if (error) throw error;
+    return { ok: true };
+  },
+
+  async advanceStatus(id: string, nextStatus: string): Promise<{ ok: boolean }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({ status: nextStatus })
+      .eq('id', id);
+    
+    if (error) throw error;
+    return { ok: true };
+  },
+
+  async createQuoteFromRFQ(rfqId: string): Promise<{ ok: boolean; quoteId: string }> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Generate quote ID
+    const quoteId = `QUOTE-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+    
+    // Update RFQ with quote_id and status
+    const { error } = await supabase
+      .from('rfqs')
+      .update({ 
+        quote_id: quoteId,
+        status: 'quoted'
+      })
+      .eq('id', rfqId);
+    
+    if (error) throw error;
+    return { ok: true, quoteId };
+  },
+
   async saveRFQ(data: RFQData): Promise<{ ok: boolean; id: string }> {
     const { supabase } = await import('@/integrations/supabase/client');
     const { data: { user } } = await supabase.auth.getUser();
@@ -207,12 +295,16 @@ export const rfqService = {
         attachments: data.attachments,
         notes: data.notes,
         status: data.status,
+        source: data.source || 'internal',
+        assigned_to: data.assigned_to,
+        created_by: data.created_by || user.id,
+        quote_id: data.quote_id,
         default_warehouse_id: data.default_warehouse_id,
-        include_shipping: data.include_shipping || false,
+        include_shipping: data.include_shipping || false
       })
       .select()
       .single();
-
+    
     if (error) throw error;
 
     // Calculate and save shipping quotes if enabled

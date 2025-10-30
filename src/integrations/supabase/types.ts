@@ -456,6 +456,7 @@ export type Database = {
       }
       rfqs: {
         Row: {
+          assigned_to: string | null
           attachments: string[] | null
           attributes: Json | null
           category_l1: number | null
@@ -463,6 +464,7 @@ export type Database = {
           category_l3: number | null
           commercial_terms: Json | null
           created_at: string | null
+          created_by: string | null
           currency: string
           customer_links: string[] | null
           default_warehouse_id: string | null
@@ -474,7 +476,9 @@ export type Database = {
           inquiry_id: string
           notes: string | null
           product_name: string | null
+          quote_id: string | null
           reference_number: string | null
+          source: string | null
           source_links: string[] | null
           status: string
           target_country: string
@@ -485,6 +489,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           attachments?: string[] | null
           attributes?: Json | null
           category_l1?: number | null
@@ -492,6 +497,7 @@ export type Database = {
           category_l3?: number | null
           commercial_terms?: Json | null
           created_at?: string | null
+          created_by?: string | null
           currency: string
           customer_links?: string[] | null
           default_warehouse_id?: string | null
@@ -503,7 +509,9 @@ export type Database = {
           inquiry_id: string
           notes?: string | null
           product_name?: string | null
+          quote_id?: string | null
           reference_number?: string | null
+          source?: string | null
           source_links?: string[] | null
           status: string
           target_country: string
@@ -514,6 +522,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           attachments?: string[] | null
           attributes?: Json | null
           category_l1?: number | null
@@ -521,6 +530,7 @@ export type Database = {
           category_l3?: number | null
           commercial_terms?: Json | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string
           customer_links?: string[] | null
           default_warehouse_id?: string | null
@@ -532,7 +542,9 @@ export type Database = {
           inquiry_id?: string
           notes?: string | null
           product_name?: string | null
+          quote_id?: string | null
           reference_number?: string | null
+          source?: string | null
           source_links?: string[] | null
           status?: string
           target_country?: string

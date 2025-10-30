@@ -89,6 +89,9 @@ export interface Supplier {
 }
 
 // RFQ Types
+export type RFQSource = 'customer_portal' | 'internal';
+export type RFQStatus = 'pending' | 'draft' | 'in_progress' | 'quoted' | 'closed' | 'submitted' | 'approved' | 'rejected';
+
 export interface RFQData {
   inquiry_id?: string;
   product_name?: string;
@@ -112,12 +115,24 @@ export interface RFQData {
   images: string[];
   attachments: string[];
   notes: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  status: RFQStatus;
+  source?: RFQSource;
+  created_by?: string;
+  assigned_to?: string;
+  quote_id?: string;
   created_at?: string;
   updated_at?: string;
   default_warehouse_id?: string;
   include_shipping?: boolean;
   shipping_quotes?: any[];
+  basic_info?: {
+    productLink?: string;
+    productName?: string;
+    targetPrice?: number;
+    quantity?: number;
+    notes?: string;
+    referencePicUrls?: string[];
+  };
 }
 
 export interface ValidationError {

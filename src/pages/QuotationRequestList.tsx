@@ -13,8 +13,9 @@ import type { RFQData } from '@/types/rfq';
 import { RFQDetailDialog } from '@/components/rfq/RFQDetailDialog';
 import { QuotationRequestDetailDialog } from '@/components/rfq/QuotationRequestDetailDialog';
 
-type RequestSource = 'system_rfq' | 'customer_quote' | 'all';
+type RequestSource = 'customer_portal' | 'internal' | 'all';
 type PriorityLevel = 'high' | 'medium' | 'low';
+type FilterStatus = 'all' | 'pending' | 'draft' | 'in_progress' | 'quoted' | 'closed';
 
 interface QuotationRequest extends RFQData {
   request_source?: RequestSource;
@@ -28,7 +29,7 @@ export default function QuotationRequestList() {
   const [requests, setRequests] = useState<QuotationRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<QuotationRequest[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [sourceFilter, setSourceFilter] = useState<RequestSource>('all');
   
   // Dialog states
@@ -53,10 +54,10 @@ export default function QuotationRequestList() {
     try {
       setLoading(true);
       const rfqs = await rfqService.listRFQs();
-      // 将RFQ标记为系统询价来源
+      // Map RFQs with proper source
       const mappedRequests: QuotationRequest[] = rfqs.map(rfq => ({
         ...rfq,
-        request_source: 'system_rfq' as RequestSource,
+        request_source: (rfq.source || 'internal') as RequestSource,
         priority: 'medium' as PriorityLevel,
         image_url: rfq.images?.[0]
       }));
@@ -98,21 +99,25 @@ export default function QuotationRequestList() {
 
   const getStatusConfig = (status: string) => {
     const configs = {
-      draft: { label: '草稿', variant: 'secondary' as const, clickable: false },
-      submitted: { label: '已提交', variant: 'default' as const, clickable: false },
-      approved: { label: '已报价', variant: 'default' as const, clickable: true },
-      rejected: { label: '已拒绝', variant: 'destructive' as const, clickable: false }
+      pending: { label: '待处理 Pending', variant: 'outline' as const, clickable: false },
+      draft: { label: '草稿 Draft', variant: 'secondary' as const, clickable: false },
+      in_progress: { label: '进行中 In Progress', variant: 'default' as const, clickable: false },
+      quoted: { label: '已报价 Quoted', variant: 'default' as const, clickable: true },
+      closed: { label: '已关闭 Closed', variant: 'secondary' as const, clickable: false },
+      submitted: { label: '已提交 Submitted', variant: 'default' as const, clickable: false },
+      approved: { label: '已批准 Approved', variant: 'default' as const, clickable: true },
+      rejected: { label: '已拒绝 Rejected', variant: 'destructive' as const, clickable: false }
     };
     return configs[status as keyof typeof configs] || { label: status, variant: 'secondary' as const, clickable: false };
   };
 
   const getSourceLabel = (source?: RequestSource) => {
     const labels = {
-      system_rfq: '系统询价',
-      customer_quote: '客户请求',
-      all: '全部'
+      customer_portal: '客户提交 Customer Portal',
+      internal: '内部创建 Internal',
+      all: '全部来源 All Sources'
     };
-    return labels[source || 'system_rfq'];
+    return labels[source || 'internal'];
   };
 
   const getPriorityConfig = (priority?: PriorityLevel) => {
@@ -181,6 +186,24 @@ export default function QuotationRequestList() {
     }
   };
 
+  const handleAssignToMe = async (rfqId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('未登录 Not logged in');
+        return;
+      }
+      
+      await rfqService.assignRFQ(rfqId, user.id);
+      toast.success('已领取 Assigned to you');
+      await loadRequests();
+    } catch (error) {
+      console.error('Failed to assign:', error);
+      toast.error('领取失败 Failed to assign');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -235,8 +258,8 @@ export default function QuotationRequestList() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部来源 All Sources</SelectItem>
-                <SelectItem value="system_rfq">系统询价 System RFQ</SelectItem>
-                <SelectItem value="customer_quote">客户请求 Customer Request</SelectItem>
+                <SelectItem value="customer_portal">客户提交 Customer Portal</SelectItem>
+                <SelectItem value="internal">内部创建 Internal</SelectItem>
               </SelectContent>
             </Select>
 
@@ -250,16 +273,17 @@ export default function QuotationRequestList() {
               />
             </div>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as FilterStatus)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="状态" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">全部状态 All Status</SelectItem>
+                <SelectItem value="pending">待处理 Pending</SelectItem>
                 <SelectItem value="draft">草稿 Draft</SelectItem>
-                <SelectItem value="submitted">已提交 Submitted</SelectItem>
-                <SelectItem value="approved">已报价 Quoted</SelectItem>
-                <SelectItem value="rejected">已拒绝 Rejected</SelectItem>
+                <SelectItem value="in_progress">进行中 In Progress</SelectItem>
+                <SelectItem value="quoted">已报价 Quoted</SelectItem>
+                <SelectItem value="closed">已关闭 Closed</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -467,7 +491,7 @@ export default function QuotationRequestList() {
       
       {selectedRequest && (
         <QuotationRequestDetailDialog
-          request={selectedRequest}
+          request={selectedRequest as any}
           open={requestDetailOpen}
           onOpenChange={setRequestDetailOpen}
         />
