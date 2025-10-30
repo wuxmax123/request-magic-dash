@@ -9,12 +9,23 @@ import { rfqService } from '@/services/rfqService';
 import { RFQData } from '@/types/rfq';
 import { ArrowLeft, Package, DollarSign, Hash, Calendar } from 'lucide-react';
 import { RFQCommunication } from '@/components/rfq/RFQCommunication';
+import { AssigneeCard } from '@/components/rfq/AssigneeCard';
+import { useAdmin } from '@/hooks/useAdmin';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function RFQView() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isSupervisor, isAdmin } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [rfq, setRfq] = useState<RFQData | null>(null);
+  const [assigneeProfile, setAssigneeProfile] = useState<any>(null);
+  const [assignerProfile, setAssignerProfile] = useState<any>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -22,11 +33,26 @@ export default function RFQView() {
     }
   }, [id]);
 
+  const loadCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) setCurrentUserId(user.id);
+  };
+
   const loadRFQ = async (rfqId: string) => {
     try {
       setLoading(true);
       const data = await rfqService.getRFQById(rfqId);
       setRfq(data);
+
+      // Load profiles if assigned
+      if (data?.assigned_to) {
+        const profile = await rfqService.getUserProfile(data.assigned_to);
+        setAssigneeProfile(profile);
+      }
+      if (data?.assigned_by) {
+        const profile = await rfqService.getUserProfile(data.assigned_by);
+        setAssignerProfile(profile);
+      }
     } catch (error) {
       console.error('Failed to load RFQ:', error);
       toast({
@@ -37,6 +63,30 @@ export default function RFQView() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAssign = async (userId: string, note?: string) => {
+    if (!id) return;
+    await rfqService.assign(id, userId, note);
+    await loadRFQ(id);
+  };
+
+  const handleReassign = async (userId: string, note?: string) => {
+    if (!id) return;
+    await rfqService.reassign(id, userId, note);
+    await loadRFQ(id);
+  };
+
+  const handleUnassign = async (note?: string) => {
+    if (!id) return;
+    await rfqService.unassign(id, note);
+    await loadRFQ(id);
+  };
+
+  const handleAssignToMe = async () => {
+    if (!id) return;
+    await rfqService.assignToMe(id);
+    await loadRFQ(id);
   };
 
   const getStatusConfig = (status: string) => {
@@ -71,9 +121,14 @@ export default function RFQView() {
 
   const statusConfig = getStatusConfig(rfq.status);
 
+  const canAssign = (isSupervisor || isAdmin) && !rfq?.assigned_to;
+  const canReassign = (isSupervisor || isAdmin) && !!rfq?.assigned_to;
+  const canUnassign = (isSupervisor || isAdmin) && !!rfq?.assigned_to;
+  const canSelfAssign = !!rfq?.auto_assignable && !rfq?.assigned_to && currentUserId && rfq?.assigned_to !== currentUserId;
+
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto py-8 px-4 max-w-5xl">
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
@@ -87,9 +142,10 @@ export default function RFQView() {
           </Badge>
         </div>
 
-        <div className="grid gap-6">
-          {/* Basic Information */}
-          <Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
+            <Card>
             <CardHeader>
               <CardTitle>基本信息 Basic Information</CardTitle>
             </CardHeader>
@@ -237,18 +293,38 @@ export default function RFQView() {
             </CardContent>
           </Card>
 
-          {/* Communication Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>沟通记录 Communication</CardTitle>
-              <CardDescription>
-                与采购员沟通 Communicate with purchaser
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RFQCommunication rfqId={id!} />
-            </CardContent>
-          </Card>
+            {/* Communication Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>沟通记录 Communication</CardTitle>
+                <CardDescription>
+                  与采购员沟通 Communicate with purchaser
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RFQCommunication rfqId={id!} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-6">
+            {rfq && (
+              <AssigneeCard
+                rfq={rfq}
+                canAssign={canAssign}
+                canReassign={canReassign}
+                canUnassign={canUnassign}
+                canSelfAssign={canSelfAssign}
+                onAssign={handleAssign}
+                onReassign={handleReassign}
+                onUnassign={handleUnassign}
+                onAssignToMe={handleAssignToMe}
+                assigneeProfile={assigneeProfile}
+                assignerProfile={assignerProfile}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

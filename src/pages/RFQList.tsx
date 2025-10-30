@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, FileText, Truck, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ArrowLeft, Plus, FileText, Truck, X, UserCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useAdmin } from '@/hooks/useAdmin';
 
 const statusMap = {
   draft: { label: '草稿', variant: 'outline' as const },
@@ -16,28 +19,63 @@ const statusMap = {
   rejected: { label: '已拒绝', variant: 'destructive' as const },
 };
 
+type AssigneeFilter = 'all' | 'unassigned' | 'assigned_to_me';
+
 export default function RFQList() {
   const navigate = useNavigate();
+  const { isSupervisor } = useAdmin();
   const [rfqs, setRfqs] = useState<RFQData[]>([]);
+  const [filteredRfqs, setFilteredRfqs] = useState<RFQData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assigneeFilter, setAssigneeFilter] = useState<AssigneeFilter>('all');
+  const [assigneeProfiles, setAssigneeProfiles] = useState<Record<string, any>>({});
 
   useEffect(() => {
     loadRFQs();
   }, []);
 
+  useEffect(() => {
+    filterRFQs();
+  }, [rfqs, assigneeFilter]);
+
   const loadRFQs = async () => {
     try {
       const data = await rfqService.listRFQs();
       setRfqs(data);
-      } catch (error) {
-        toast({
-          title: '加载失败 Failed to Load',
-          description: '无法加载询价单列表 Unable to load RFQ list',
-          variant: 'destructive',
-        });
-      } finally {
+      
+      // Load assignee profiles
+      const uniqueAssigneeIds = [...new Set(data.map(r => r.assigned_to).filter(Boolean))] as string[];
+      const profiles: Record<string, any> = {};
+      for (const userId of uniqueAssigneeIds) {
+        const profile = await rfqService.getUserProfile(userId);
+        if (profile) profiles[userId] = profile;
+      }
+      setAssigneeProfiles(profiles);
+    } catch (error) {
+      toast({
+        title: '加载失败 Failed to Load',
+        description: '无法加载询价单列表 Unable to load RFQ list',
+        variant: 'destructive',
+      });
+    } finally {
       setLoading(false);
     }
+  };
+
+  const filterRFQs = async () => {
+    let filtered = [...rfqs];
+
+    if (assigneeFilter === 'unassigned') {
+      filtered = filtered.filter(r => !r.assigned_to);
+    } else if (assigneeFilter === 'assigned_to_me') {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        filtered = filtered.filter(r => r.assigned_to === user.id);
+      }
+    }
+
+    setFilteredRfqs(filtered);
   };
 
   const formatDate = (dateStr?: string) => {
@@ -64,13 +102,25 @@ export default function RFQList() {
             <h1 className="text-3xl font-bold">我的询价单 My RFQ List</h1>
             <p className="text-muted-foreground">查看和管理您的询价单 View and manage your RFQ requests</p>
           </div>
+          {isSupervisor && (
+            <Select value={assigneeFilter} onValueChange={(v) => setAssigneeFilter(v as AssigneeFilter)}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">所有 All</SelectItem>
+                <SelectItem value="unassigned">未分配 Unassigned</SelectItem>
+                <SelectItem value="assigned_to_me">分配给我 Assigned to me</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           <Button onClick={() => navigate('/rfq')}>
             <Plus className="h-4 w-4 mr-2" />
             新建询价单 New RFQ
           </Button>
         </div>
 
-        {rfqs.length === 0 ? (
+        {filteredRfqs.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -86,7 +136,7 @@ export default function RFQList() {
           <Card>
             <CardHeader>
               <CardTitle>询价单列表 RFQ List</CardTitle>
-              <CardDescription>共 {rfqs.length} 条记录 {rfqs.length} records</CardDescription>
+              <CardDescription>共 {filteredRfqs.length} 条记录 {filteredRfqs.length} records</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -94,6 +144,7 @@ export default function RFQList() {
                   <TableRow>
                     <TableHead>询价单号 RFQ ID</TableHead>
                     <TableHead>客户需求 Requirements</TableHead>
+                    <TableHead>负责人 Assignee</TableHead>
                     <TableHead>目标国家 Target Country</TableHead>
                     <TableHead>货币 Currency</TableHead>
                     <TableHead>运费 Shipping</TableHead>
@@ -103,13 +154,41 @@ export default function RFQList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rfqs.map((rfq) => {
+                  {filteredRfqs.map((rfq) => {
                     const selectedQuote = rfq.shipping_quotes?.find(q => q.is_selected) || rfq.shipping_quotes?.[0];
                     
                     return (
                       <TableRow key={rfq.inquiry_id}>
                         <TableCell className="font-mono text-sm">{rfq.inquiry_id}</TableCell>
                         <TableCell className="max-w-xs truncate">{rfq.title || '-'}</TableCell>
+                        <TableCell>
+                          {rfq.assigned_to ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar className="w-6 h-6">
+                                <AvatarImage src={assigneeProfiles[rfq.assigned_to]?.avatar_url} />
+                                <AvatarFallback className="text-xs">
+                                  {(assigneeProfiles[rfq.assigned_to]?.full_name || 
+                                    assigneeProfiles[rfq.assigned_to]?.username || 'U')
+                                    .split(' ')
+                                    .map((n: string) => n[0])
+                                    .join('')
+                                    .toUpperCase()
+                                    .slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm truncate max-w-24">
+                                {assigneeProfiles[rfq.assigned_to]?.full_name || 
+                                 assigneeProfiles[rfq.assigned_to]?.username || 
+                                 'Unknown'}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                              <UserCircle2 className="h-4 w-4" />
+                              <span>未分配 Unassigned</span>
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>{rfq.target_country}</TableCell>
                         <TableCell>{rfq.currency}</TableCell>
                         <TableCell>

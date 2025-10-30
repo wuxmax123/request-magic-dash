@@ -91,6 +91,15 @@ export interface Supplier {
 // RFQ Types
 export type RFQSource = 'customer_portal' | 'internal';
 export type RFQStatus = 'pending' | 'draft' | 'in_progress' | 'quoted' | 'closed' | 'submitted' | 'approved' | 'rejected';
+export type RFQPriority = 'P1' | 'P2' | 'P3';
+
+export interface ActivityLogEntry {
+  at: string;
+  by: string;
+  action: 'assign' | 'unassign' | 'reassign';
+  to?: string;
+  note?: string;
+}
 
 export interface RFQData {
   inquiry_id?: string;
@@ -119,6 +128,11 @@ export interface RFQData {
   source?: RFQSource;
   created_by?: string;
   assigned_to?: string;
+  assigned_by?: string;
+  assigned_at?: string;
+  auto_assignable?: boolean;
+  priority?: RFQPriority;
+  activity_log?: ActivityLogEntry[];
   quote_id?: string;
   created_at?: string;
   updated_at?: string;

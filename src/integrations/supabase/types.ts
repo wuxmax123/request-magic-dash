@@ -521,9 +521,13 @@ export type Database = {
       }
       rfqs: {
         Row: {
+          activity_log: Json | null
+          assigned_at: string | null
+          assigned_by: string | null
           assigned_to: string | null
           attachments: string[] | null
           attributes: Json | null
+          auto_assignable: boolean | null
           category_l1: number | null
           category_l2: number | null
           category_l3: number | null
@@ -540,6 +544,7 @@ export type Database = {
           include_shipping: boolean
           inquiry_id: string
           notes: string | null
+          priority: string | null
           product_name: string | null
           quote_id: string | null
           reference_number: string | null
@@ -554,9 +559,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          activity_log?: Json | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           assigned_to?: string | null
           attachments?: string[] | null
           attributes?: Json | null
+          auto_assignable?: boolean | null
           category_l1?: number | null
           category_l2?: number | null
           category_l3?: number | null
@@ -573,6 +582,7 @@ export type Database = {
           include_shipping?: boolean
           inquiry_id: string
           notes?: string | null
+          priority?: string | null
           product_name?: string | null
           quote_id?: string | null
           reference_number?: string | null
@@ -587,9 +597,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          activity_log?: Json | null
+          assigned_at?: string | null
+          assigned_by?: string | null
           assigned_to?: string | null
           attachments?: string[] | null
           attributes?: Json | null
+          auto_assignable?: boolean | null
           category_l1?: number | null
           category_l2?: number | null
           category_l3?: number | null
@@ -606,6 +620,7 @@ export type Database = {
           include_shipping?: boolean
           inquiry_id?: string
           notes?: string | null
+          priority?: string | null
           product_name?: string | null
           quote_id?: string | null
           reference_number?: string | null

@@ -9,17 +9,15 @@ import { Card } from '@/components/ui/card';
 import { Home, Plus, Search, Image as ImageIcon, Truck, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { rfqService } from '@/services/rfqService';
-import type { RFQData } from '@/types/rfq';
+import type { RFQData, RFQPriority } from '@/types/rfq';
 import { RFQDetailDialog } from '@/components/rfq/RFQDetailDialog';
 import { QuotationRequestDetailDialog } from '@/components/rfq/QuotationRequestDetailDialog';
 
 type RequestSource = 'customer_portal' | 'internal' | 'all';
-type PriorityLevel = 'high' | 'medium' | 'low';
 type FilterStatus = 'all' | 'pending' | 'draft' | 'in_progress' | 'quoted' | 'closed';
 
 interface QuotationRequest extends RFQData {
   request_source?: RequestSource;
-  priority?: PriorityLevel;
   image_url?: string;
 }
 
@@ -58,7 +56,6 @@ export default function QuotationRequestList() {
       const mappedRequests: QuotationRequest[] = rfqs.map(rfq => ({
         ...rfq,
         request_source: (rfq.source || 'internal') as RequestSource,
-        priority: 'medium' as PriorityLevel,
         image_url: rfq.images?.[0]
       }));
       setRequests(mappedRequests);
@@ -120,13 +117,13 @@ export default function QuotationRequestList() {
     return labels[source || 'internal'];
   };
 
-  const getPriorityConfig = (priority?: PriorityLevel) => {
+  const getPriorityConfig = (priority?: RFQPriority) => {
     const configs = {
-      high: { label: 'High', color: 'text-red-500' },
-      medium: { label: 'Medium', color: 'text-yellow-500' },
-      low: { label: 'Low', color: 'text-green-500' }
+      P1: { label: 'P1', color: 'text-red-500' },
+      P2: { label: 'P2', color: 'text-yellow-500' },
+      P3: { label: 'P3', color: 'text-green-500' }
     };
-    return configs[priority || 'medium'];
+    return configs[priority || 'P2'];
   };
 
   const formatDate = (dateStr?: string) => {
