@@ -12,11 +12,16 @@ import { ArrowLeft, Plus, FileText, Truck, X, UserCircle2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAdmin } from '@/hooks/useAdmin';
 
-const statusMap = {
-  draft: { label: '草稿', variant: 'outline' as const },
-  submitted: { label: '已提交', variant: 'default' as const },
-  approved: { label: '已批准', variant: 'default' as const },
-  rejected: { label: '已拒绝', variant: 'destructive' as const },
+const statusMap: Record<string, { label: string; variant: 'outline' | 'default' | 'destructive' | 'secondary' }> = {
+  draft: { label: '草稿', variant: 'outline' },
+  submitted: { label: '已提交', variant: 'default' },
+  approved: { label: '已批准', variant: 'default' },
+  rejected: { label: '已拒绝', variant: 'destructive' },
+  pending: { label: '待处理', variant: 'secondary' },
+  assigned: { label: '已分配', variant: 'default' },
+  in_progress: { label: '进行中', variant: 'default' },
+  quoted: { label: '已报价', variant: 'default' },
+  closed: { label: '已关闭', variant: 'secondary' },
 };
 
 type AssigneeFilter = 'all' | 'unassigned' | 'assigned_to_me';
@@ -207,8 +212,8 @@ export default function RFQList() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={statusMap[rfq.status].variant}>
-                            {statusMap[rfq.status].label}
+                          <Badge variant={statusMap[rfq.status]?.variant || 'secondary'}>
+                            {statusMap[rfq.status]?.label || rfq.status}
                           </Badge>
                         </TableCell>
                         <TableCell>{formatDate(rfq.created_at)}</TableCell>

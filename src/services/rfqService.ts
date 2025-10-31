@@ -706,4 +706,171 @@ export const rfqService = {
 
     return { ok: true };
   },
+
+  // Assignment methods
+  async getUserProfile(userId: string): Promise<{ full_name?: string; username?: string; avatar_url?: string } | null> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('full_name, username, avatar_url')
+      .eq('id', userId)
+      .single();
+
+    if (error) return null;
+    return data;
+  },
+
+  async assign(rfqId: string, assigneeId: string, note?: string): Promise<void> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const now = new Date().toISOString();
+    
+    // Fetch current RFQ to get activity log
+    const { data: currentRfq } = await supabase
+      .from('rfqs')
+      .select('activity_log, assigned_to')
+      .eq('id', rfqId)
+      .single();
+
+    if (!currentRfq || currentRfq.assigned_to !== null) {
+      throw new Error('RFQ is already assigned');
+    }
+
+    const currentLog = Array.isArray(currentRfq.activity_log) ? currentRfq.activity_log : [];
+    const newLog = [...currentLog, {
+      at: now,
+      by: user.id,
+      action: 'assign',
+      to: assigneeId,
+      note: note || ''
+    }];
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({
+        assigned_to: assigneeId,
+        assigned_by: user.id,
+        assigned_at: now,
+        activity_log: newLog
+      })
+      .eq('id', rfqId)
+      .is('assigned_to', null);
+
+    if (error) throw error;
+  },
+
+  async reassign(rfqId: string, assigneeId: string, note?: string): Promise<void> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const now = new Date().toISOString();
+    
+    // Fetch current activity log
+    const { data: currentRfq } = await supabase
+      .from('rfqs')
+      .select('activity_log')
+      .eq('id', rfqId)
+      .single();
+
+    const currentLog = Array.isArray(currentRfq?.activity_log) ? currentRfq.activity_log : [];
+    const newLog = [...currentLog, {
+      at: now,
+      by: user.id,
+      action: 'reassign',
+      to: assigneeId,
+      note: note || ''
+    }];
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({
+        assigned_to: assigneeId,
+        assigned_by: user.id,
+        assigned_at: now,
+        activity_log: newLog
+      })
+      .eq('id', rfqId);
+
+    if (error) throw error;
+  },
+
+  async unassign(rfqId: string, note?: string): Promise<void> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const now = new Date().toISOString();
+    
+    // Fetch current activity log
+    const { data: currentRfq } = await supabase
+      .from('rfqs')
+      .select('activity_log')
+      .eq('id', rfqId)
+      .single();
+
+    const currentLog = Array.isArray(currentRfq?.activity_log) ? currentRfq.activity_log : [];
+    const newLog = [...currentLog, {
+      at: now,
+      by: user.id,
+      action: 'unassign',
+      note: note || ''
+    }];
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({
+        assigned_to: null,
+        assigned_by: null,
+        assigned_at: null,
+        activity_log: newLog
+      })
+      .eq('id', rfqId);
+
+    if (error) throw error;
+  },
+
+  async assignToMe(rfqId: string): Promise<void> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const now = new Date().toISOString();
+    
+    // Fetch current RFQ
+    const { data: currentRfq } = await supabase
+      .from('rfqs')
+      .select('activity_log, assigned_to')
+      .eq('id', rfqId)
+      .single();
+
+    if (!currentRfq || currentRfq.assigned_to !== null) {
+      throw new Error('RFQ is already assigned');
+    }
+
+    const currentLog = Array.isArray(currentRfq.activity_log) ? currentRfq.activity_log : [];
+    const newLog = [...currentLog, {
+      at: now,
+      by: user.id,
+      action: 'assign',
+      to: user.id,
+      note: 'Self-assigned'
+    }];
+    
+    const { error } = await supabase
+      .from('rfqs')
+      .update({
+        assigned_to: user.id,
+        assigned_by: user.id,
+        assigned_at: now,
+        activity_log: newLog
+      })
+      .eq('id', rfqId)
+      .is('assigned_to', null);
+
+    if (error) throw error;
+  },
 };
