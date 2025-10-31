@@ -102,6 +102,7 @@ export interface ActivityLogEntry {
 }
 
 export interface RFQData {
+  id?: string;
   inquiry_id?: string;
   product_name?: string;
   reference_number?: string;

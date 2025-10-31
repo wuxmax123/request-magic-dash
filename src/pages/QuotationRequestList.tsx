@@ -6,12 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Home, Plus, Search, Image as ImageIcon, Truck, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Home, Plus, Search, Image as ImageIcon, Truck, X, UserCircle2, UserCog, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import { rfqService } from '@/services/rfqService';
 import type { RFQData, RFQPriority } from '@/types/rfq';
 import { RFQDetailDialog } from '@/components/rfq/RFQDetailDialog';
 import { QuotationRequestDetailDialog } from '@/components/rfq/QuotationRequestDetailDialog';
+import { UserSelector } from '@/components/rfq/UserSelector';
+import { useAdmin } from '@/hooks/useAdmin';
 
 type RequestSource = 'customer_portal' | 'internal' | 'all';
 type FilterStatus = 'all' | 'pending' | 'draft' | 'in_progress' | 'quoted' | 'closed';
@@ -23,6 +29,7 @@ interface QuotationRequest extends RFQData {
 
 export default function QuotationRequestList() {
   const navigate = useNavigate();
+  const { isSupervisor } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<QuotationRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<QuotationRequest[]>([]);
@@ -39,6 +46,14 @@ export default function QuotationRequestList() {
   // Selection states
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
+  
+  // Assignment states
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assignDialogType, setAssignDialogType] = useState<'assign' | 'reassign' | 'unassign'>('assign');
+  const [assigningRfq, setAssigningRfq] = useState<QuotationRequest | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [assignNote, setAssignNote] = useState('');
+  const [assigneeProfiles, setAssigneeProfiles] = useState<Record<string, any>>({});
 
   useEffect(() => {
     loadRequests();
@@ -59,6 +74,15 @@ export default function QuotationRequestList() {
         image_url: rfq.images?.[0]
       }));
       setRequests(mappedRequests);
+      
+      // Load assignee profiles
+      const uniqueAssigneeIds = [...new Set(mappedRequests.map(r => r.assigned_to).filter(Boolean))] as string[];
+      const profiles: Record<string, any> = {};
+      for (const userId of uniqueAssigneeIds) {
+        const profile = await rfqService.getUserProfile(userId);
+        if (profile) profiles[userId] = profile;
+      }
+      setAssigneeProfiles(profiles);
     } catch (error) {
       console.error('Failed to load requests:', error);
       toast.error('加载报价请求失败 Failed to load quotation requests');
@@ -201,6 +225,42 @@ export default function QuotationRequestList() {
     }
   };
 
+  const handleOpenAssignDialog = (request: QuotationRequest, type: 'assign' | 'reassign' | 'unassign') => {
+    setAssigningRfq(request);
+    setAssignDialogType(type);
+    setSelectedUserId('');
+    setAssignNote('');
+    setAssignDialogOpen(true);
+  };
+
+  const handleConfirmAssign = async () => {
+    if (!assigningRfq?.id) return;
+    
+    if (assignDialogType !== 'unassign' && !selectedUserId) {
+      toast.error('请选择用户 Please select a user');
+      return;
+    }
+
+    try {
+      if (assignDialogType === 'assign') {
+        await rfqService.assign(assigningRfq.id, selectedUserId, assignNote || undefined);
+        toast.success('分配成功 Assigned successfully');
+      } else if (assignDialogType === 'reassign') {
+        await rfqService.reassign(assigningRfq.id, selectedUserId, assignNote || undefined);
+        toast.success('重新分配成功 Reassigned successfully');
+      } else {
+        await rfqService.unassign(assigningRfq.id, assignNote || undefined);
+        toast.success('取消分配成功 Unassigned successfully');
+      }
+      
+      setAssignDialogOpen(false);
+      await loadRequests();
+    } catch (error) {
+      console.error('Assignment failed:', error);
+      toast.error('操作失败 Operation failed');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -304,6 +364,7 @@ export default function QuotationRequestList() {
                   </TableHead>
                   <TableHead className="min-w-[200px]">产品名称 Product Name</TableHead>
                   <TableHead className="min-w-[120px]">请求来源 Request From</TableHead>
+                  <TableHead className="min-w-[120px]">负责人 Assignee</TableHead>
                   <TableHead className="min-w-[120px]">状态 Status</TableHead>
                   <TableHead className="w-[100px]">图片 Image</TableHead>
                   <TableHead className="min-w-[100px]">优先级 Priority</TableHead>
@@ -311,13 +372,13 @@ export default function QuotationRequestList() {
                   <TableHead className="min-w-[150px]">备注 Note</TableHead>
                   <TableHead className="min-w-[120px]">运费 Shipping</TableHead>
                   <TableHead className="min-w-[120px]">目标 Target</TableHead>
-                  <TableHead className="min-w-[100px]">操作 Menu</TableHead>
+                  <TableHead className="min-w-[150px]">操作 Menu</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRequests.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12">
+                <TableRow>
+                    <TableCell colSpan={11} className="text-center py-12">
                       <div className="text-muted-foreground">
                         <p className="mb-4">暂无报价请求 No quotation requests</p>
                         <Button onClick={() => navigate('/rfq')}>
@@ -366,6 +427,34 @@ export default function QuotationRequestList() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">{getSourceLabel(request.request_source)}</span>
+                        </TableCell>
+                        <TableCell>
+                          {request.assigned_to ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar className="w-6 h-6">
+                                <AvatarImage src={assigneeProfiles[request.assigned_to]?.avatar_url} />
+                                <AvatarFallback className="text-xs">
+                                  {(assigneeProfiles[request.assigned_to]?.full_name || 
+                                    assigneeProfiles[request.assigned_to]?.username || 'U')
+                                    .split(' ')
+                                    .map((n: string) => n[0])
+                                    .join('')
+                                    .toUpperCase()
+                                    .slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm truncate max-w-24">
+                                {assigneeProfiles[request.assigned_to]?.full_name || 
+                                 assigneeProfiles[request.assigned_to]?.username || 
+                                 'Unknown'}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                              <UserCircle2 className="h-4 w-4" />
+                              <span>未分配</span>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -437,35 +526,70 @@ export default function QuotationRequestList() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            {request.status === 'draft' ? (
-                              <Button 
-                                variant="link"
-                                size="sm"
-                                onClick={() => navigate(`/rfq?id=${request.inquiry_id}`)}
-                              >
-                                编辑
-                              </Button>
-                            ) : (
-                              <Button 
-                                variant="link" 
-                                size="sm"
-                                onClick={() => handleViewRequestDetail(request)}
-                              >
-                                查看详情
-                              </Button>
-                            )}
-                            {request.status === 'approved' && (
-                              <Button
-                                variant="link"
-                                size="sm"
-                                className="text-blue-500"
-                                onClick={() => {
-                                  navigate(`/rfq?id=${request.inquiry_id}&tab=suppliers`);
-                                }}
-                              >
-                                查看报价
-                              </Button>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex gap-2">
+                              {request.status === 'draft' ? (
+                                <Button 
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => navigate(`/rfq?id=${request.inquiry_id}`)}
+                                >
+                                  编辑
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="link" 
+                                  size="sm"
+                                  onClick={() => handleViewRequestDetail(request)}
+                                >
+                                  查看详情
+                                </Button>
+                              )}
+                              {request.status === 'approved' && (
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="text-blue-500"
+                                  onClick={() => {
+                                    navigate(`/rfq?id=${request.inquiry_id}&tab=suppliers`);
+                                  }}
+                                >
+                                  查看报价
+                                </Button>
+                              )}
+                            </div>
+                            {isSupervisor && (
+                              <div className="flex gap-1">
+                                {!request.assigned_to ? (
+                                  <Button 
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleOpenAssignDialog(request, 'assign')}
+                                  >
+                                    <UserCircle2 className="h-3 w-3 mr-1" />
+                                    分配
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button 
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleOpenAssignDialog(request, 'reassign')}
+                                    >
+                                      <UserCog className="h-3 w-3 mr-1" />
+                                      重新分配
+                                    </Button>
+                                    <Button 
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleOpenAssignDialog(request, 'unassign')}
+                                    >
+                                      <UserX className="h-3 w-3 mr-1" />
+                                      取消分配
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
                             )}
                           </div>
                         </TableCell>
@@ -493,6 +617,57 @@ export default function QuotationRequestList() {
           onOpenChange={setRequestDetailOpen}
         />
       )}
+
+      {/* Assignment Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {assignDialogType === 'assign' ? '分配询价员 Assign' : 
+               assignDialogType === 'reassign' ? '重新分配 Reassign' : 
+               '取消分配 Unassign'}
+            </DialogTitle>
+            <DialogDescription>
+              {assignDialogType === 'unassign' 
+                ? '确定要取消当前分配吗？Remove the current assignee from this RFQ' 
+                : '选择要分配的询价员 Select a user to assign this RFQ to'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {assignDialogType !== 'unassign' && (
+              <div className="space-y-2">
+                <Label htmlFor="user">询价员 User *</Label>
+                <UserSelector
+                  value={selectedUserId}
+                  onChange={setSelectedUserId}
+                  placeholder="搜索用户... Search users..."
+                />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="note">备注 Note (Optional)</Label>
+              <Textarea
+                id="note"
+                placeholder="添加备注... Add a note..."
+                value={assignNote}
+                onChange={(e) => setAssignNote(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
+              取消 Cancel
+            </Button>
+            <Button onClick={handleConfirmAssign}>
+              确认 Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

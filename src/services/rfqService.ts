@@ -5,7 +5,9 @@ import {
   FeatureModuleAttribute,
   RFQData,
   Supplier,
-  CommercialTerm
+  CommercialTerm,
+  RFQPriority,
+  RFQSource
 } from '@/types/rfq';
 import { categoryService } from './categoryService';
 import { 
@@ -458,6 +460,7 @@ export const rfqService = {
     if (error) throw error;
 
     return data.map(rfq => ({
+      id: rfq.id,
       inquiry_id: rfq.inquiry_id,
       product_name: rfq.product_name,
       reference_number: rfq.reference_number,
@@ -482,6 +485,11 @@ export const rfqService = {
       status: rfq.status as 'draft' | 'submitted' | 'approved' | 'rejected',
       created_at: rfq.created_at,
       updated_at: rfq.updated_at,
+      assigned_to: rfq.assigned_to || undefined,
+      assigned_by: rfq.assigned_by || undefined,
+      assigned_at: rfq.assigned_at || undefined,
+      priority: rfq.priority as RFQPriority | undefined,
+      source: rfq.source as RFQSource | undefined,
     }));
   },
 
