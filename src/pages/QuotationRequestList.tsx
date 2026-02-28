@@ -363,6 +363,7 @@ export default function QuotationRequestList() {
                     />
                   </TableHead>
                   <TableHead className="min-w-[200px]">产品名称 Product Name</TableHead>
+                  <TableHead className="min-w-[120px]">报价编号 Quote ID</TableHead>
                   <TableHead className="min-w-[120px]">请求来源 Request From</TableHead>
                   <TableHead className="min-w-[120px]">负责人 Assignee</TableHead>
                   <TableHead className="min-w-[120px]">状态 Status</TableHead>
@@ -378,7 +379,7 @@ export default function QuotationRequestList() {
               <TableBody>
                 {filteredRequests.length === 0 ? (
                 <TableRow>
-                    <TableCell colSpan={11} className="text-center py-12">
+                    <TableCell colSpan={12} className="text-center py-12">
                       <div className="text-muted-foreground">
                         <p className="mb-4">暂无报价请求 No quotation requests</p>
                         <Button onClick={() => navigate('/rfq')}>
@@ -424,6 +425,11 @@ export default function QuotationRequestList() {
                               {request.inquiry_id}
                             </button>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm font-mono text-muted-foreground">
+                            {request.quote_id || '-'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">{getSourceLabel(request.request_source)}</span>
