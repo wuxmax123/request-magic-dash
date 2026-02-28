@@ -11,8 +11,8 @@ import { WarehouseManager } from '@/components/admin/WarehouseManager';
 import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager';
 import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
 import { PricingTierManager } from '@/components/admin/PricingTierManager';
-import { StoreManager } from '@/components/admin/StoreManager';
-import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText, Percent, Store } from 'lucide-react';
+import { UserManager } from '@/components/admin/UserManager';
+import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText, Percent, UserCog } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -54,9 +54,9 @@ const Admin = () => {
               <Users className="h-4 w-4" />
               供应商
             </TabsTrigger>
-            <TabsTrigger value="stores" className="flex items-center gap-2">
-              <Store className="h-4 w-4" />
-              店铺管理
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <UserCog className="h-4 w-4" />
+              用户管理
             </TabsTrigger>
             <TabsTrigger value="logistics" className="flex items-center gap-2">
               <Truck className="h-4 w-4" />
@@ -132,8 +132,8 @@ const Admin = () => {
             <SupplierManager />
           </TabsContent>
 
-          <TabsContent value="stores">
-            <StoreManager />
+          <TabsContent value="users">
+            <UserManager />
           </TabsContent>
 
           <TabsContent value="logistics">
