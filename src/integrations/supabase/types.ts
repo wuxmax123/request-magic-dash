@@ -824,7 +824,7 @@ export type Database = {
           invited_email: string
           parent_user_id: string
           status: string
-          store_id: string | null
+          store_ids: string[]
           updated_at: string
         }
         Insert: {
@@ -834,7 +834,7 @@ export type Database = {
           invited_email: string
           parent_user_id: string
           status?: string
-          store_id?: string | null
+          store_ids?: string[]
           updated_at?: string
         }
         Update: {
@@ -844,18 +844,10 @@ export type Database = {
           invited_email?: string
           parent_user_id?: string
           status?: string
-          store_id?: string | null
+          store_ids?: string[]
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sub_account_invitations_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       suppliers: {
         Row: {

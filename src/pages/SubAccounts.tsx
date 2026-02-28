@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { UserPlus, Trash2, Mail, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ interface Store {
 interface Invitation {
   id: string;
   invited_email: string;
-  store_id: string | null;
+  store_ids: string[];
   status: string;
   child_user_id: string | null;
   created_at: string;
@@ -38,7 +38,7 @@ export default function SubAccounts() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [email, setEmail] = useState('');
-  const [selectedStoreId, setSelectedStoreId] = useState<string>('');
+  const [selectedStoreIds, setSelectedStoreIds] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -49,7 +49,7 @@ export default function SubAccounts() {
     const [invRes, storeRes] = await Promise.all([
       supabase
         .from('sub_account_invitations')
-        .select('id, invited_email, store_id, status, child_user_id, created_at')
+        .select('id, invited_email, store_ids, status, child_user_id, created_at')
         .eq('parent_user_id', user.id)
         .order('created_at', { ascending: false }),
       supabase
@@ -67,10 +67,18 @@ export default function SubAccounts() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const getStoreName = (storeId: string | null) => {
-    if (!storeId) return '-';
-    const store = stores.find(s => s.id === storeId);
-    return store ? `${store.store_name} (${store.platform})` : '-';
+  const getStoreNames = (storeIds: string[]) => {
+    if (!storeIds || storeIds.length === 0) return null;
+    return storeIds.map(sid => {
+      const store = stores.find(s => s.id === sid);
+      return store ? `${store.store_name}` : sid.slice(0, 8);
+    });
+  };
+
+  const toggleStore = (storeId: string) => {
+    setSelectedStoreIds(prev =>
+      prev.includes(storeId) ? prev.filter(id => id !== storeId) : [...prev, storeId]
+    );
   };
 
   const handleInvite = async () => {
@@ -82,14 +90,11 @@ export default function SubAccounts() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast.error('请先登录'); setSending(false); return; }
 
-
-
-
     const { error } = await supabase.from('sub_account_invitations').insert({
       parent_user_id: user.id,
       invited_email: email.trim().toLowerCase(),
       status: 'pending',
-      store_id: (selectedStoreId && selectedStoreId !== '__none') ? selectedStoreId : null,
+      store_ids: selectedStoreIds,
     });
     if (error) {
       if (error.code === '23505') {
@@ -101,10 +106,10 @@ export default function SubAccounts() {
       return;
     }
 
-    toast.success('子账号邀请已发送');
+    toast.success('子账号邀请已创建');
     setDialogOpen(false);
     setEmail('');
-    setSelectedStoreId('');
+    setSelectedStoreIds([]);
     setSending(false);
     fetchData();
   };
@@ -155,6 +160,7 @@ export default function SubAccounts() {
               <TableBody>
                 {invitations.map(inv => {
                   const statusInfo = STATUS_MAP[inv.status] || STATUS_MAP.pending;
+                  const storeNames = getStoreNames(inv.store_ids);
                   return (
                     <TableRow key={inv.id}>
                       <TableCell className="font-medium">
@@ -163,7 +169,17 @@ export default function SubAccounts() {
                           {inv.invited_email}
                         </div>
                       </TableCell>
-                      <TableCell>{getStoreName(inv.store_id)}</TableCell>
+                      <TableCell>
+                        {storeNames ? (
+                          <div className="flex flex-wrap gap-1">
+                            {storeNames.map((name, i) => (
+                              <Badge key={i} variant="outline">{name}</Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={statusInfo.variant} className="flex items-center gap-1 w-fit">
                           {statusInfo.icon}
@@ -174,12 +190,7 @@ export default function SubAccounts() {
                         {new Date(inv.created_at).toLocaleDateString('zh-CN')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleDelete(inv.id)}
-                        >
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(inv.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
@@ -209,21 +220,32 @@ export default function SubAccounts() {
               />
             </div>
             {stores.length > 0 && (
-              <div className="space-y-2">
-                <Label>关联店铺（可选）</Label>
-                <Select value={selectedStoreId} onValueChange={setSelectedStoreId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择要关联的店铺" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none">不关联店铺</SelectItem>
-                    {stores.map(s => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.store_name}{s.platform ? ` (${s.platform})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <Label>分配店铺（可多选）</Label>
+                <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                  {stores.map(store => (
+                    <label
+                      key={store.id}
+                      className="flex items-center gap-3 py-1.5 px-2 rounded hover:bg-muted/50 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedStoreIds.includes(store.id)}
+                        onCheckedChange={() => toggleStore(store.id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-medium">{store.store_name}</span>
+                        {store.platform && (
+                          <Badge variant="outline" className="ml-2 text-xs">{store.platform}</Badge>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {selectedStoreIds.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    已选择 {selectedStoreIds.length} 个店铺
+                  </p>
+                )}
               </div>
             )}
           </div>
