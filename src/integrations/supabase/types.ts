@@ -741,6 +741,42 @@ export type Database = {
           },
         ]
       }
+      shipping_markup_rules: {
+        Row: {
+          country_code: string
+          country_name_cn: string
+          country_name_en: string
+          created_at: string
+          id: string
+          is_active: boolean
+          markup_percentage: number
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          country_code: string
+          country_name_cn: string
+          country_name_en: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          markup_percentage?: number
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          country_name_cn?: string
+          country_name_en?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          markup_percentage?: number
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -811,11 +847,14 @@ export type Database = {
       }
       user_pricing_tiers: {
         Row: {
+          additional_item_fee_adjustment: number
           created_at: string
           description: string | null
+          first_item_fee_adjustment: number
           id: string
           is_active: boolean
           markup_percentage: number
+          shipping_markup_percentage: number
           sort: number
           tier_code: string
           tier_name: string
@@ -823,11 +862,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_item_fee_adjustment?: number
           created_at?: string
           description?: string | null
+          first_item_fee_adjustment?: number
           id?: string
           is_active?: boolean
           markup_percentage?: number
+          shipping_markup_percentage?: number
           sort?: number
           tier_code: string
           tier_name: string
@@ -835,11 +877,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_item_fee_adjustment?: number
           created_at?: string
           description?: string | null
+          first_item_fee_adjustment?: number
           id?: string
           is_active?: boolean
           markup_percentage?: number
+          shipping_markup_percentage?: number
           sort?: number
           tier_code?: string
           tier_name?: string

@@ -18,6 +18,9 @@ interface PricingTier {
   tier_name: string;
   tier_name_en: string | null;
   markup_percentage: number;
+  shipping_markup_percentage: number;
+  first_item_fee_adjustment: number;
+  additional_item_fee_adjustment: number;
   description: string | null;
   sort: number;
   is_active: boolean;
@@ -30,6 +33,9 @@ const emptyTier = {
   tier_name: '',
   tier_name_en: '',
   markup_percentage: 0,
+  shipping_markup_percentage: 0,
+  first_item_fee_adjustment: 0,
+  additional_item_fee_adjustment: 0,
   description: '',
   sort: 0,
   is_active: true,
@@ -76,6 +82,9 @@ export function PricingTierManager() {
       tier_name: tier.tier_name,
       tier_name_en: tier.tier_name_en || '',
       markup_percentage: tier.markup_percentage,
+      shipping_markup_percentage: tier.shipping_markup_percentage,
+      first_item_fee_adjustment: tier.first_item_fee_adjustment,
+      additional_item_fee_adjustment: tier.additional_item_fee_adjustment,
       description: tier.description || '',
       sort: tier.sort,
       is_active: tier.is_active,
@@ -98,6 +107,9 @@ export function PricingTierManager() {
             tier_name: form.tier_name,
             tier_name_en: form.tier_name_en || null,
             markup_percentage: form.markup_percentage,
+            shipping_markup_percentage: form.shipping_markup_percentage,
+            first_item_fee_adjustment: form.first_item_fee_adjustment,
+            additional_item_fee_adjustment: form.additional_item_fee_adjustment,
             description: form.description || null,
             sort: form.sort,
             is_active: form.is_active,
@@ -113,6 +125,9 @@ export function PricingTierManager() {
             tier_name: form.tier_name,
             tier_name_en: form.tier_name_en || null,
             markup_percentage: form.markup_percentage,
+            shipping_markup_percentage: form.shipping_markup_percentage,
+            first_item_fee_adjustment: form.first_item_fee_adjustment,
+            additional_item_fee_adjustment: form.additional_item_fee_adjustment,
             description: form.description || null,
             sort: form.sort,
             is_active: form.is_active,
@@ -159,10 +174,10 @@ export function PricingTierManager() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Percent className="h-5 w-5" />
-              用户加价比例设置 User Pricing Tiers
+              用户加价设置 User Pricing Tiers
             </CardTitle>
             <CardDescription>
-              设置不同用户级别的加价比例 / Configure markup percentages for different user tiers
+              一件代发加价设置：产品采购加价、运费加价比例、首件/续件费用调整 / Dropshipping markup: product, shipping, first &amp; additional item fees
             </CardDescription>
           </div>
           <Button onClick={handleOpenCreate}>
@@ -179,7 +194,10 @@ export function PricingTierManager() {
               <TableHead>级别代码 Code</TableHead>
               <TableHead>级别名称 Name</TableHead>
               <TableHead>英文名 English</TableHead>
-              <TableHead>加价比例 Markup</TableHead>
+              <TableHead>产品加价 Product</TableHead>
+              <TableHead>运费加价 Shipping</TableHead>
+              <TableHead>首件调整 1st Item</TableHead>
+              <TableHead>续件调整 Add. Item</TableHead>
               <TableHead>说明 Description</TableHead>
               <TableHead>状态 Status</TableHead>
               <TableHead className="text-right">操作 Actions</TableHead>
@@ -188,7 +206,7 @@ export function PricingTierManager() {
           <TableBody>
             {tiers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   暂无数据 No data
                 </TableCell>
               </TableRow>
@@ -204,9 +222,20 @@ export function PricingTierManager() {
                   <TableCell className="font-medium">{tier.tier_name}</TableCell>
                   <TableCell className="text-muted-foreground">{tier.tier_name_en || '-'}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="text-base font-semibold">
+                    <Badge variant="secondary" className="font-semibold">
                       {tier.markup_percentage}%
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-semibold">
+                      {tier.shipping_markup_percentage}%
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {tier.first_item_fee_adjustment ? `+${tier.first_item_fee_adjustment}` : '-'}
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {tier.additional_item_fee_adjustment ? `+${tier.additional_item_fee_adjustment}` : '-'}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                     {tier.description || '-'}
@@ -276,17 +305,62 @@ export function PricingTierManager() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>加价比例 Markup % *</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={form.markup_percentage}
-                    onChange={(e) => setForm({ ...form, markup_percentage: parseFloat(e.target.value) || 0 })}
-                    min={0}
-                    step={0.5}
-                  />
-                  <span className="text-muted-foreground font-medium">%</span>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>产品加价 Product Markup % *</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={form.markup_percentage}
+                      onChange={(e) => setForm({ ...form, markup_percentage: parseFloat(e.target.value) || 0 })}
+                      min={0}
+                      step={0.5}
+                    />
+                    <span className="text-muted-foreground font-medium">%</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>运费加价 Shipping Markup %</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={form.shipping_markup_percentage}
+                      onChange={(e) => setForm({ ...form, shipping_markup_percentage: parseFloat(e.target.value) || 0 })}
+                      min={0}
+                      step={0.5}
+                    />
+                    <span className="text-muted-foreground font-medium">%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>首件费用调整 1st Item Fee</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground font-medium">+</span>
+                    <Input
+                      type="number"
+                      value={form.first_item_fee_adjustment}
+                      onChange={(e) => setForm({ ...form, first_item_fee_adjustment: parseFloat(e.target.value) || 0 })}
+                      min={0}
+                      step={0.5}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>续件费用调整 Add. Item Fee</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground font-medium">+</span>
+                    <Input
+                      type="number"
+                      value={form.additional_item_fee_adjustment}
+                      onChange={(e) => setForm({ ...form, additional_item_fee_adjustment: parseFloat(e.target.value) || 0 })}
+                      min={0}
+                      step={0.5}
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
