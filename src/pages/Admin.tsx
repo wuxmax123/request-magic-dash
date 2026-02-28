@@ -11,6 +11,7 @@ import { WarehouseManager } from '@/components/admin/WarehouseManager';
 import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager';
 import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
 import { PricingTierManager } from '@/components/admin/PricingTierManager';
+import { UserTierAssignment } from '@/components/admin/UserTierAssignment';
 import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText, Percent } from 'lucide-react';
 
 const Admin = () => {
@@ -154,7 +155,10 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="pricing">
-            <PricingTierManager />
+            <div className="space-y-6">
+              <PricingTierManager />
+              <UserTierAssignment />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
