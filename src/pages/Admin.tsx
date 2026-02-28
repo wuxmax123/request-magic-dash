@@ -12,6 +12,7 @@ import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager'
 import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
 import { PricingTierManager } from '@/components/admin/PricingTierManager';
 import { UserTierAssignment } from '@/components/admin/UserTierAssignment';
+import { ShippingMarkupManager } from '@/components/admin/ShippingMarkupManager';
 import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText, Percent } from 'lucide-react';
 
 const Admin = () => {
@@ -158,6 +159,7 @@ const Admin = () => {
             <div className="space-y-6">
               <PricingTierManager />
               <UserTierAssignment />
+              <ShippingMarkupManager />
             </div>
           </TabsContent>
         </Tabs>
