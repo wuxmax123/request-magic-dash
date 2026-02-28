@@ -10,7 +10,8 @@ import { DataImporter } from '@/components/admin/DataImporter';
 import { WarehouseManager } from '@/components/admin/WarehouseManager';
 import { CarrierChannelManager } from '@/components/admin/CarrierChannelManager';
 import { RateMatrixManager } from '@/components/admin/RateMatrixManager';
-import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText } from 'lucide-react';
+import { PricingTierManager } from '@/components/admin/PricingTierManager';
+import { Settings, FolderTree, ListChecks, Package, Users, Database, Truck, FileText, Percent } from 'lucide-react';
 
 const Admin = () => {
   return (
@@ -27,34 +28,38 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="import" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="import" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
-              数据导入 Import
+              数据导入
             </TabsTrigger>
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <FolderTree className="h-4 w-4" />
-              类目管理 Categories
+              类目管理
             </TabsTrigger>
             <TabsTrigger value="attributes" className="flex items-center gap-2">
               <ListChecks className="h-4 w-4" />
-              类目属性 Attributes
+              类目属性
             </TabsTrigger>
             <TabsTrigger value="features" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              功能模块 Features
+              功能模块
             </TabsTrigger>
             <TabsTrigger value="commercial" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              商务条款 Commercial
+              商务条款
             </TabsTrigger>
             <TabsTrigger value="suppliers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              供应商管理 Suppliers
+              供应商
             </TabsTrigger>
             <TabsTrigger value="logistics" className="flex items-center gap-2">
               <Truck className="h-4 w-4" />
-              物流管理 Logistics
+              物流管理
+            </TabsTrigger>
+            <TabsTrigger value="pricing" className="flex items-center gap-2">
+              <Percent className="h-4 w-4" />
+              加价设置
             </TabsTrigger>
           </TabsList>
 
@@ -146,6 +151,10 @@ const Admin = () => {
                 <RateMatrixManager />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="pricing">
+            <PricingTierManager />
           </TabsContent>
         </Tabs>
       </div>
