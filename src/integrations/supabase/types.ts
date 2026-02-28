@@ -816,6 +816,47 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_account_invitations: {
+        Row: {
+          child_user_id: string | null
+          created_at: string
+          id: string
+          invited_email: string
+          parent_user_id: string
+          status: string
+          store_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          child_user_id?: string | null
+          created_at?: string
+          id?: string
+          invited_email: string
+          parent_user_id: string
+          status?: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          child_user_id?: string | null
+          created_at?: string
+          id?: string
+          invited_email?: string
+          parent_user_id?: string
+          status?: string
+          store_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_account_invitations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null

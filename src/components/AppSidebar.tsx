@@ -1,4 +1,4 @@
-import { Home, Plus, FileText, Truck, Settings } from "lucide-react"
+import { Home, Plus, FileText, Truck, Settings, UserPlus } from "lucide-react"
 import { NavLink } from "react-router-dom"
 
 import {
@@ -18,6 +18,7 @@ const items = [
   { title: "新建询价单", subtitle: "New RFQ", url: "/rfq", icon: Plus },
   { title: "报价请求管理", subtitle: "Quotation Requests", url: "/quotation-requests", icon: FileText },
   { title: "运费计算器", subtitle: "Shipping Calculator", url: "/shipping-estimator", icon: Truck },
+  { title: "子账号管理", subtitle: "Sub Accounts", url: "/sub-accounts", icon: UserPlus },
   { title: "管理后台", subtitle: "Admin", url: "/admin", icon: Settings },
 ]
 

@@ -14,6 +14,7 @@ import Admin from "./pages/Admin";
 import ShippingEstimator from "./pages/ShippingEstimator";
 import RFQNew from "./pages/portal/RFQNew";
 import RFQView from "./pages/portal/RFQView";
+import SubAccounts from "./pages/SubAccounts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
                     <Route path="/shipping-estimator" element={<ShippingEstimator />} />
                     <Route path="/portal/rfq/new" element={<RFQNew />} />
                     <Route path="/portal/rfq/:id" element={<RFQView />} />
+                    <Route path="/sub-accounts" element={<SubAccounts />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
