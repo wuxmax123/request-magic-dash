@@ -741,42 +741,6 @@ export type Database = {
           },
         ]
       }
-      shipping_markup_rules: {
-        Row: {
-          country_code: string
-          country_name_cn: string
-          country_name_en: string
-          created_at: string
-          id: string
-          is_active: boolean
-          markup_percentage: number
-          sort: number
-          updated_at: string
-        }
-        Insert: {
-          country_code: string
-          country_name_cn: string
-          country_name_en: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          markup_percentage?: number
-          sort?: number
-          updated_at?: string
-        }
-        Update: {
-          country_code?: string
-          country_name_cn?: string
-          country_name_en?: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          markup_percentage?: number
-          sort?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       suppliers: {
         Row: {
           address: string | null
