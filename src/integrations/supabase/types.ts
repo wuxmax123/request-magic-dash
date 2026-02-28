@@ -777,6 +777,45 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          platform: string
+          store_name: string
+          store_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          platform?: string
+          store_name: string
+          store_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          platform?: string
+          store_name?: string
+          store_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           address: string | null
