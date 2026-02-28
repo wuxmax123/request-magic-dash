@@ -282,6 +282,7 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          pricing_tier_id: string | null
           updated_at: string | null
           username: string | null
         }
@@ -290,6 +291,7 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id: string
+          pricing_tier_id?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -298,10 +300,19 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          pricing_tier_id?: string | null
           updated_at?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_pricing_tier_id_fkey"
+            columns: ["pricing_tier_id"]
+            isOneToOne: false
+            referencedRelation: "user_pricing_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_matrix: {
         Row: {
@@ -797,6 +808,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_pricing_tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          markup_percentage: number
+          sort: number
+          tier_code: string
+          tier_name: string
+          tier_name_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          markup_percentage?: number
+          sort?: number
+          tier_code: string
+          tier_name: string
+          tier_name_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          markup_percentage?: number
+          sort?: number
+          tier_code?: string
+          tier_name?: string
+          tier_name_en?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
